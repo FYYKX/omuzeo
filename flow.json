@@ -15,8 +15,8 @@
 	},
 	"accounts": {
 		"emulator-account": {
-			"address": "f8d6e0586b0a20c7",
-			"key": "7fe7e14da2973c23841123aa772f3b0a1ba4752b50d9ecce81171f50f0439b7b"
+			"address": "6de22766222b4344",
+			"key": "2fb9217f49d12e9e19ebbf19b0252b71bbd357870d29c3311bfd948b96ce129f"
 		},
 		"emulator-artist": {
 			"address": "0x01cf0e2f2f715450",
@@ -34,6 +34,10 @@
 			"emulator-artist": [
 				"OmuseoContract"
 			]
+		},
+    "testnet": {
+			"emulator-account": ["OmuseoContract"]
 		}
-	}
+	},
+  "app.detail.title": "Omuseo"
 }

@@ -1,0 +1,25 @@
+POST http://localhost:3000/create HTTP/1.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="text"
+
+dog
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="1.jpg"
+Content-Type: image/jpeg
+
+< ./public/assets/1.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+GET http://localhost:3000/account/0xa116dd5b9dcd4ff2 HTTP/1.1
+
+###
+
+GET http://localhost:3000/nft HTTP/1.1
+
+###
+
+GET http://localhost:3000/nft/2 HTTP/1.1
