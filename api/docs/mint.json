@@ -1,0 +1,36 @@
+{
+	"status": 4,
+	"statusCode": 0,
+	"errorMessage": "",
+	"events": [
+		{
+			"type": "A.7e60df042a9c0868.FlowToken.TokensWithdrawn",
+			"transactionId": "08a8041f092bdf52405743cc1c3bbcadb49dafa40549b256484e22b0662c43cf",
+			"transactionIndex": 0,
+			"eventIndex": 0,
+			"data": {
+				"amount": "0.00001000",
+				"from": "0x6de22766222b4344"
+			}
+		},
+		{
+			"type": "A.7e60df042a9c0868.FlowToken.TokensDeposited",
+			"transactionId": "08a8041f092bdf52405743cc1c3bbcadb49dafa40549b256484e22b0662c43cf",
+			"transactionIndex": 0,
+			"eventIndex": 1,
+			"data": {
+				"amount": "0.00001000",
+				"to": "0x912d5440f7e3769e"
+			}
+		},
+		{
+			"type": "A.912d5440f7e3769e.FlowFees.TokensDeposited",
+			"transactionId": "08a8041f092bdf52405743cc1c3bbcadb49dafa40549b256484e22b0662c43cf",
+			"transactionIndex": 0,
+			"eventIndex": 2,
+			"data": {
+				"amount": "0.00001000"
+			}
+		}
+	]
+}

@@ -75,32 +75,34 @@ app.post("/create", upload.single("image"), async (req, res) => {
 		console.log(metadata);
 		const authorization = authorizationFunction();
 		var item = {
-			name: req.body.text,
-			uri: metadata.url,
+			name: req.body.name,
+			uri: `https://${metadata.ipnft}.ipfs.dweb.link/${req.file.filename}`,
 		};
 		var response = await fcl.send([
 			fcl.transaction`
 				import OmuseoContract from 0xOmuseoContract;
-				transaction(metadata: {String : String}) {
+				transaction(receiver: Address, metadata: {String : String}) {
 					let receiverRef: &{OmuseoContract.NFTReceiver}
 					let minterRef: &OmuseoContract.NFTMinter
 
 					prepare(acct: AuthAccount) {
-						self.receiverRef = acct.getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
-							.borrow()
-							?? panic("Could not borrow receiver reference")
 						self.minterRef = acct.borrow<&OmuseoContract.NFTMinter>(from: /storage/NFTMinter)
 							?? panic("Could not borrow minter reference")
+
+						let recipient = getAccount(0x486185a6ec419d94)
+						self.receiverRef = recipient.getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
+							.borrow()
+							?? panic("Could not borrow receiver reference")
 					}
 
 					execute {
 						let newNFT <- self.minterRef.mint()
 						self.receiverRef.deposit(token: <-newNFT, metadata: metadata)
-						log("NFT Minted and deposited to Account 2's Collection")
 					}
 				}
 			`,
 			fcl.args([
+				fcl.arg(req.body.receiver, t.Address),
 				fcl.arg(
 					Object.keys(item).map((k, i) => {
 						return { key: k, value: item[k] };
@@ -114,6 +116,7 @@ app.post("/create", upload.single("image"), async (req, res) => {
 			fcl.limit(9999),
 		]);
 		var transaction = await fcl.tx(response).onceSealed();
+
 		res.send(transaction);
 	} catch (error) {
 		console.log(error);
