@@ -46,6 +46,7 @@ const ActiveCollectionButton = () => {
 
       const result = await fcl.tx(transactionId).onceSealed();
       console.log(result);
+      setHasCollection(true);
     } catch (error) {
       console.error(error);
     }
