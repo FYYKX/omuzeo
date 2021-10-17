@@ -56,7 +56,7 @@ const ActiveCollectionButton = () => {
 
 const CurrentUser = () => {
   const [user, setUser] = useState({});
-  const [hasCollection, setHasCollection] = useState(false);
+  const [hasCollection, setHasCollection] = useState(true);
 
   const checkCollection = async (address) => {
     try {
@@ -78,11 +78,10 @@ const CurrentUser = () => {
           fcl.limit(9999),
         ])
         .then(fcl.decode);
-      console.log(collection);
       setHasCollection(collection);
     } catch (error) {
       console.log(error);
-      setHasCollection(false);
+      setHasCollection(true);
     }
   };
 
@@ -95,7 +94,7 @@ const CurrentUser = () => {
         checkCollection(user.addr);
       }
     });
-  }, []);
+  }, [hasCollection]);
 
   return (
     <Card>
