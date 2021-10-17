@@ -10,4 +10,4 @@ fcl
   .config()
   .put('accessNode.api', process.env.REACT_APP_ACCESS_NODE || 'http://localhost:8080')
   .put('challenge.handshake', process.env.REACT_APP_WALLET_DISCOVERY || 'http://localhost:8701/fcl/authn')
-  .put('0xOmuseoContract', process.env.REACT_APP_OMUSEO_CONTRACT);
+  .put('0xOmuseoContract', process.env.REACT_APP_OMUSEO_CONTRACT || '0xf8d6e0586b0a20c7');

@@ -17,7 +17,7 @@ const apiKey =
 const client = new NFTStorage({ token: apiKey });
 
 const pk = "2fb9217f49d12e9e19ebbf19b0252b71bbd357870d29c3311bfd948b96ce129f";
-const admin = "0x6de22766222b4344";
+const admin = "0xf8d6e0586b0a20c7";
 
 fcl.config()
 	.put("env", "testnet")
