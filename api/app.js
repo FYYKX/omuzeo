@@ -72,27 +72,29 @@ app.post("/create", upload.single("image"), async (req, res) => {
 				type: req.file.mimetype,
 			}),
 		});
-		console.log(metadata);
+		console.log(metadata.embed());
 		const authorization = authorizationFunction();
 		var item = {
 			name: req.body.name,
-			uri: `https://${metadata.ipnft}.ipfs.dweb.link/${req.file.filename}`,
+			url: metadata.url,
+			image: metadata.embed().image.href,
 		};
 		var response = await fcl.send([
 			fcl.transaction`
 				import OmuseoContract from 0xOmuseoContract;
+
 				transaction(receiver: Address, metadata: {String : String}) {
 					let receiverRef: &{OmuseoContract.NFTReceiver}
 					let minterRef: &OmuseoContract.NFTMinter
 
 					prepare(acct: AuthAccount) {
-						self.minterRef = acct.borrow<&OmuseoContract.NFTMinter>(from: /storage/NFTMinter)
-							?? panic("Could not borrow minter reference")
-
-						let recipient = getAccount(0x486185a6ec419d94)
+						let recipient = getAccount(receiver)
 						self.receiverRef = recipient.getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
 							.borrow()
 							?? panic("Could not borrow receiver reference")
+
+						self.minterRef = acct.borrow<&OmuseoContract.NFTMinter>(from: /storage/NFTMinter)
+							?? panic("Could not borrow minter reference")
 					}
 
 					execute {
@@ -106,6 +108,59 @@ app.post("/create", upload.single("image"), async (req, res) => {
 				fcl.arg(
 					Object.keys(item).map((k, i) => {
 						return { key: k, value: item[k] };
+					}),
+					t.Dictionary({ key: t.String, value: t.String })
+				),
+			]),
+			fcl.proposer(authorization),
+			fcl.authorizations([authorization]),
+			fcl.payer(authorization),
+			fcl.limit(9999),
+		]);
+		var transaction = await fcl.tx(response).onceSealed().then(fcl.decode);
+
+		res.send(transaction);
+	} catch (error) {
+		console.log(error);
+		res.status(500).send(error);
+	}
+});
+
+app.get("/transfer/:receiver/:id", async (req, res) => {
+	try {
+		const authorization = authorizationFunction();
+		const metadata = {
+			lastOwner: admin,
+		};
+		var response = await fcl.send([
+			fcl.transaction`
+				import OmuseoContract from 0xOmuseoContract;
+
+				transaction(receiver: Address, id: UInt64, metadata: {String : String}) {
+					let transferToken: @OmuseoContract.NFT
+
+					prepare(acct: AuthAccount) {
+						let collectionRef = acct.borrow<&OmuseoContract.Collection>(from: /storage/NFTCollection)
+							?? panic("Could not borrow a reference to the owner's collection")
+
+						self.transferToken <- collectionRef.withdraw(withdrawId: id)
+					}
+
+					execute {
+						let receiverRef = getAccount(receiver).getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
+							.borrow()
+							?? panic("Could not borrow receiver reference")
+
+						receiverRef.deposit(token: <-self.transferToken, metadata: metadata)
+					}
+				}
+			`,
+			fcl.args([
+				fcl.arg(req.params.receiver, t.Address),
+				fcl.arg(parseInt(req.params.id), t.UInt64),
+				fcl.arg(
+					Object.keys(metadata).map((k, i) => {
+						return { key: k, value: metadata[k] };
 					}),
 					t.Dictionary({ key: t.String, value: t.String })
 				),
@@ -144,21 +199,25 @@ app.get("/nft", async (req, res) => {
 	}
 });
 
-app.get("/nft/:id", async (req, res) => {
+app.get("/nft/:address/:id", async (req, res) => {
 	try {
 		const nft = await fcl
 			.send([
 				fcl.script`
 					import OmuseoContract from 0xOmuseoContract;
-					pub fun main(id: UInt64) : {String : String} {
-						let nftOwner = getAccount(0x6de22766222b4344)
+
+					pub fun main(address: Address, id: UInt64) : {String : String} {
+						let nftOwner = getAccount(address)
 						let receiverRef = nftOwner.getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
 							.borrow()
 							?? panic("Could not borrow receiver reference")
 						return receiverRef.getMetadata(id: id)
 					}
 				`,
-				fcl.args([fcl.arg(parseInt(req.params.id), t.UInt64)]),
+				fcl.args([
+					fcl.arg(parseInt(req.params.address), t.Address),
+					fcl.arg(parseInt(req.params.id), t.UInt64),
+				]),
 			])
 			.then(fcl.decode);
 		res.send(nft);
@@ -170,7 +229,52 @@ app.get("/nft/:id", async (req, res) => {
 
 app.get("/account/:address", async (req, res) => {
 	const { account } = await fcl.send([fcl.getAccount(req.params.address)]);
-	res.send(account);
+	const authorization = authorizationFunction();
+	const collection = await fcl
+		.send([
+			fcl.script`
+			import OmuseoContract from 0xOmuseoContract;
+
+			pub fun main(address: Address): Bool {
+				let receiverRef = getAccount(address).getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
+					.borrow()
+					?? panic("Could not borrow receiver reference")
+				return receiverRef == nil ? false : true
+			}
+		`,
+			fcl.args([fcl.arg(req.params.address, t.Address)]),
+			fcl.proposer(authorization),
+			fcl.authorizations([authorization]),
+			fcl.payer(authorization),
+			fcl.limit(9999),
+		])
+		.then(fcl.decode);
+	const ids = await fcl
+		.send([
+			fcl.script`
+			import OmuseoContract from 0xOmuseoContract;
+
+			pub fun main(address: Address): [UInt64] {
+				let nftOwner = getAccount(address)
+				let receiverRef = nftOwner.getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
+					.borrow()
+					?? panic("Could not borrow receiver reference")
+				return receiverRef.getIds()
+			}
+		`,
+			fcl.args([fcl.arg(req.params.address, t.Address)]),
+			fcl.proposer(authorization),
+			fcl.authorizations([authorization]),
+			fcl.payer(authorization),
+			fcl.limit(9999),
+		])
+		.then(fcl.decode);
+
+	res.send({
+		account,
+		collection,
+		ids,
+	});
 });
 
 app.listen(port, () => {
