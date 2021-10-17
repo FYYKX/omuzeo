@@ -17,12 +17,27 @@
 		"emulator-account": {
 			"address": "6de22766222b4344",
 			"key": "2fb9217f49d12e9e19ebbf19b0252b71bbd357870d29c3311bfd948b96ce129f"
+		},
+		"emulator-artist": {
+			"address": "0x01cf0e2f2f715450",
+			"key":{
+				"type": "hex",
+				"index": 0,
+				"signatureAlgorithm": "ECDSA_P256",
+				"hashAlgorithm": "SHA3_256",
+				"privateKey": "c727961fd2d7bea2970c7a06633bb92944d2d5620650eab3ef7788cfe976a491"
+			}
 		}
 	},
 	"deployments": {
-		"testnet": {
+		"emulator": {
+			"emulator-artist": [
+				"OmuseoContract"
+			]
+		},
+    "testnet": {
 			"emulator-account": ["OmuseoContract"]
 		}
 	},
-	"app.detail.title": "Omuseo"
+  "app.detail.title": "Omuseo"
 }
