@@ -1,4 +1,4 @@
-pub contract PetShopContract {
+pub contract OmuseoContract {
 
     pub var ownerMap: {UInt64 : Address}
 
@@ -102,7 +102,7 @@ pub contract PetShopContract {
         pub fun mint(): @NFT {
             var newNFT <- create NFT(initId: self.idCount)
 
-            PetShopContract.ownerMap[self.idCount] = PetShopContract.account.address
+            OmuseoContract.ownerMap[self.idCount] = OmuseoContract.account.address
 
             self.idCount = self.idCount + 1 as UInt64
 

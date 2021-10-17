@@ -6,7 +6,7 @@
 		}
 	},
 	"contracts": {
-		"PetShopContract": "./src/flow/contracts/PetShopContract.cdc"
+		"OmuseoContract": "./src/flow/contracts/OmuseoContract.cdc"
 	},
 	"networks": {
 		"emulator": "127.0.0.1:3569",
@@ -15,14 +15,14 @@
 	},
 	"accounts": {
 		"emulator-account": {
-			"address": "f8d6e0586b0a20c7",
-			"key": "bd7a891abd496c9cf933214d2eab26b2a41d614d81fc62763d2c3f65d33326b0"
+			"address": "6de22766222b4344",
+			"key": "2fb9217f49d12e9e19ebbf19b0252b71bbd357870d29c3311bfd948b96ce129f"
 		}
 	},
 	"deployments": {
-		"emulator": {
-			"emulator-account": ["PetShopContract"]
+		"testnet": {
+			"emulator-account": ["OmuseoContract"]
 		}
 	},
-    "app.detail.title": "Flowwow"
+	"app.detail.title": "Omuseo"
 }

@@ -1,0 +1,17 @@
+{
+	"name": "minter",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"start": "nodemon app.js"
+	},
+	"dependencies": {
+		"@onflow/fcl": "^0.0.77",
+		"@onflow/types": "^0.0.5",
+		"elliptic": "^6.5.4",
+		"express": "~4.16.1",
+		"multer": "^1.4.3",
+		"nft.storage": "^3.3.0",
+		"sha3": "^2.1.4"
+	}
+}
