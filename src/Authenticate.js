@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import * as fcl from '@onflow/fcl';
-
+import React, { useEffect, useState } from 'react';
 import Card from './components/Card';
 
 const SignInOutButton = ({ user: { loggedIn } }) => {
@@ -17,6 +16,41 @@ const SignInOutButton = ({ user: { loggedIn } }) => {
   return <button onClick={signInOrOut}>{loggedIn ? 'Sign Out' : 'Sign In/Up'}</button>;
 };
 
+const SetupAccountButton = () => {
+  const setupAccount = async (event) => {
+    event.preventDefault();
+
+    try {
+      const transactionId = await fcl.send([
+        fcl.transaction`
+          import OmuseoContract from 0x6de22766222b4344
+
+          transaction {
+            prepare(acct: AuthAccount) {
+              let collection <- OmuseoContract.createEmptyCollection()
+              acct.save<@OmuseoContract.Collection>(<-collection, to: /storage/NFTCollection)
+              acct.link<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver, target: /storage/NFTCollection)
+            }
+          }
+        `,
+        fcl.args([]),
+        fcl.payer(fcl.authz),
+        fcl.proposer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.limit(9999)
+      ]).then(fcl.decode);
+      console.log(transactionId);
+
+      const result = await fcl.tx(transactionId).onceSealed();
+      console.log(result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return <button onClick={setupAccount}>Setup Account</button>;
+};
+
 const CurrentUser = () => {
   const [user, setUser] = useState({});
 
@@ -24,6 +58,7 @@ const CurrentUser = () => {
 
   return (
     <Card>
+      <SetupAccountButton/>
       <SignInOutButton user={user} />
     </Card>
   );
