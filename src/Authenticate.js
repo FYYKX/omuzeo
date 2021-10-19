@@ -56,7 +56,7 @@ const ActiveCollectionButton = () => {
 
 const CurrentUser = () => {
   const [user, setUser] = useState({});
-  const [hasCollection, setHasCollection] = useState(true);
+  const [hasCollection, setHasCollection] = useState(false);
 
   const checkCollection = async (address) => {
     try {
@@ -81,7 +81,7 @@ const CurrentUser = () => {
       setHasCollection(collection);
     } catch (error) {
       console.log(error);
-      setHasCollection(true);
+      setHasCollection(false);
     }
   };
 
