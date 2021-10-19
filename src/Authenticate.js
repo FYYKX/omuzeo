@@ -2,19 +2,26 @@ import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
 import Card from './components/Card';
+import axios from "axios";
 
-const SignInOutButton = ({ user: { loggedIn } }) => {
-  const signInOrOut = async (event) => {
+const SigninButton = () => {
+  const signIn = async (event) => {
     event.preventDefault();
 
-    if (loggedIn) {
-      fcl.unauthenticate();
-    } else {
-      fcl.authenticate();
-    }
+    fcl.authenticate();
   };
 
-  return <button onClick={signInOrOut}>{loggedIn ? 'Sign Out' : 'Sign In/Up'}</button>;
+  return <button onClick={signIn}>{'Sign In/Up'}</button>;
+};
+
+const SignoutButton = () => {
+  const signOut = async (event) => {
+    event.preventDefault();
+
+    fcl.unauthenticate();
+  };
+
+  return <button onClick={signOut}>{'Sign Out'}</button>;
 };
 
 const ActivateCollectionButton = () => {
@@ -48,7 +55,7 @@ const ActivateCollectionButton = () => {
       console.log(result);
     } catch (error) {
       console.error(error);
-      return false
+      return false;
     }
   };
 
@@ -58,6 +65,9 @@ const ActivateCollectionButton = () => {
 const CurrentUser = () => {
   const [user, setUser] = useState({});
   const [hasCollection, setHasCollection] = useState(false);
+
+  const [nftArtName, setNftArtName] = useState('');
+  const [nftArtImage, setNftArtImage] = useState(null);
 
   const checkCollection = async (address) => {
     try {
@@ -98,16 +108,68 @@ const CurrentUser = () => {
   }, [hasCollection]);
 
   const showActivateCollection = () => {
-    if(!user?.loggedIn) return <></>
-    if(hasCollection) return <></>
-    return <ActivateCollectionButton />
-  }
+    if (!user?.loggedIn) return <></>;
+    if (hasCollection) return <></>;
+    return <ActivateCollectionButton />;
+  };
+
+  const handleSubmitForm = (evt) => {
+    evt.preventDefault()
+
+    const data = new FormData()
+    data.append("receiver", user.addr)
+    data.append("name", nftArtName)
+    data.append("image", nftArtImage, nftArtName + '.jpg')
+
+    // TODO: Test this!
+    axios.post("/create", data, {
+      headers: {
+        'Content-Type': "multipart/form-data"
+      }
+    })
+      .then(response => {
+        console.log(response);
+      })
+      .catch(error => {
+        console.error(error)
+      })
+
+  };
+
+  const handleNameChange = (evt) => {
+    setNftArtName(evt.target.value)
+  };
+
+  const handleUpload = (evt) => {
+    setNftArtImage(evt.target.files)
+  };
+
+  const showMintForm = () => {
+    return (
+      <form onSubmit={handleSubmitForm}>
+        <input type="text" onChange={handleNameChange} placeholder="Name" />
+        <br/>
+        <input type="file" onChange={handleUpload} />
+        <input type="submit" />
+      </form>
+    );
+  };
+
+  if (!user?.loggedIn)
+    return (
+      <Card>
+        <SigninButton />
+      </Card>
+    );
 
   return (
-    <Card>
-      <SignInOutButton user={user} />
-      {showActivateCollection()}
-    </Card>
+    <>
+      <Card>
+        <SignoutButton />
+        {showActivateCollection()}
+      </Card>
+      {showMintForm()}
+    </>
   );
 };
 
