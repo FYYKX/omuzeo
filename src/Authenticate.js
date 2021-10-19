@@ -17,7 +17,7 @@ const SignInOutButton = ({ user: { loggedIn } }) => {
   return <button onClick={signInOrOut}>{loggedIn ? 'Sign Out' : 'Sign In/Up'}</button>;
 };
 
-const ActiveCollectionButton = () => {
+const ActivateCollectionButton = () => {
   const activateCollection = async (event) => {
     event.preventDefault();
 
@@ -48,6 +48,7 @@ const ActiveCollectionButton = () => {
       console.log(result);
     } catch (error) {
       console.error(error);
+      return false
     }
   };
 
@@ -96,10 +97,16 @@ const CurrentUser = () => {
     });
   }, [hasCollection]);
 
+  const showActivateCollection = () => {
+    if(!user?.loggedIn) return <></>
+    if(hasCollection) return <></>
+    return <ActivateCollectionButton />
+  }
+
   return (
     <Card>
       <SignInOutButton user={user} />
-      {!hasCollection && <ActiveCollectionButton />}
+      {showActivateCollection()}
     </Card>
   );
 };
