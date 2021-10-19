@@ -18,7 +18,7 @@ const SignInOutButton = ({ user: { loggedIn } }) => {
 };
 
 const ActiveCollectionButton = () => {
-  const activeCollection = async (event) => {
+  const activateCollection = async (event) => {
     event.preventDefault();
 
     try {
@@ -51,7 +51,7 @@ const ActiveCollectionButton = () => {
     }
   };
 
-  return <button onClick={activeCollection}>Setup Account</button>;
+  return <button onClick={activateCollection}>Activate Collection</button>;
 };
 
 const CurrentUser = () => {
