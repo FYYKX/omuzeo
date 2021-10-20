@@ -66,8 +66,9 @@ const CurrentUser = () => {
   const [user, setUser] = useState({});
   const [hasCollection, setHasCollection] = useState(false);
 
-  const [nftArtName, setNftArtName] = useState('');
+  const [nftArtName, setNftArtName] = useState(null);
   const [nftArtImage, setNftArtImage] = useState(null);
+  const [uploadSuccessMsg, setUploadSuccessMsg] = useState(null);
 
   const checkCollection = async (address) => {
     try {
@@ -121,13 +122,19 @@ const CurrentUser = () => {
     data.append("name", nftArtName)
     data.append("image", nftArtImage, nftArtName + '.jpg')
 
-    // TODO: Test this!
+    setUploadSuccessMsg('Please wait while we upload your image')
+
     axios.post("/create", data, {
       headers: {
         'Content-Type': "multipart/form-data"
       }
     })
       .then(response => {
+        if(response.status === 200) {
+          setUploadSuccessMsg(`You've successfully uploaded ${nftArtName}!`)
+        } else {
+          setUploadSuccessMsg('Something went wrong. Please try uploading again!')
+        }
         console.log(response);
       })
       .catch(error => {
@@ -138,20 +145,26 @@ const CurrentUser = () => {
 
   const handleNameChange = (evt) => {
     setNftArtName(evt.target.value)
+    setUploadSuccessMsg(null)
   };
 
   const handleUpload = (evt) => {
     setNftArtImage(evt.target.files[0])
+    setUploadSuccessMsg(null)
   };
 
   const showMintForm = () => {
     return (
+      <>
       <form onSubmit={handleSubmitForm}>
         <input type="text" onChange={handleNameChange} placeholder="Name" />
         <br/>
         <input type="file" onChange={handleUpload} />
         <input type="submit" />
       </form>
+        <br/>
+        {uploadSuccessMsg ? <span>{uploadSuccessMsg}</span> : null}
+      </>
     );
   };
 
