@@ -141,7 +141,7 @@ const CurrentUser = () => {
   };
 
   const handleUpload = (evt) => {
-    setNftArtImage(evt.target.files)
+    setNftArtImage(evt.target.files[0])
   };
 
   const showMintForm = () => {

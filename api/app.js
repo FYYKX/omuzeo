@@ -19,11 +19,13 @@ const client = new NFTStorage({ token: apiKey });
 const pk = "2fb9217f49d12e9e19ebbf19b0252b71bbd357870d29c3311bfd948b96ce129f";
 const admin = "0xf8d6e0586b0a20c7";
 
+require('dotenv').config()
+
 fcl.config()
-	.put("env", "testnet")
-	.put("accessNode.api", "https://access-testnet.onflow.org")
-	.put("discovery.wallet", "https://fcl-discovery.onflow.org/testnet/authn")
-	.put("0xOmuseoContract", admin);
+	// .put("env", "testnet") SSS: commenting this since dev env doesn't work with env set to testnet
+	.put("accessNode.api", process.env.ACCESS_NODE || "https://access-testnet.onflow.org")
+	.put("discovery.wallet", process.env.WALLET_DISCOVERY || "https://fcl-discovery.onflow.org/testnet/authn")
+	.put("0xOmuseoContract", process.env.OMUSEO_CONTRACT || admin);
 
 function sign(privateKey, message) {
 	const key = ec.keyFromPrivate(Buffer.from(privateKey, "hex"));
