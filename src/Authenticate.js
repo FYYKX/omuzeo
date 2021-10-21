@@ -179,7 +179,7 @@ const CurrentUser = () => {
     <>
       <Card>
         <SignoutButton />
-        {showActivateCollection()}
+        {!hasCollection ? showActivateCollection() : null}
       </Card>
       {showMintForm()}
     </>
