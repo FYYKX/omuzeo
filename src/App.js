@@ -7,6 +7,9 @@ import Navbar from './components/Navbar';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './ThemeContext';
 import AuthContextProvider from './AuthContext';
+import PrivateRoute from './PrivateRoute';
+import Collections from './pages/Collections';
+import Messages from './pages/Messages';
 
 const App = () => {
   return (
@@ -16,7 +19,9 @@ const App = () => {
           <Navbar />
           <Switch>
             <Route exact path="/" component={Home} />
-            <Route exact path="/artworks" component={Artworks} />
+            <PrivateRoute exact path="/artworks" component={Artworks} />
+            <PrivateRoute exact path="/collections" component={Collections} />
+            <PrivateRoute exact path="/messages" component={Messages} />
           </Switch>
         </Router>
       </AuthContextProvider>
