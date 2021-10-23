@@ -1,141 +1,126 @@
-const express = require("express");
-const multer = require("multer");
-const fs = require("fs");
-const { File, NFTStorage } = require("nft.storage");
-const fcl = require("@onflow/fcl");
-const t = require("@onflow/types");
-const SHA3 = require("sha3").SHA3;
-const EC = require("elliptic").ec;
+const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const { File, NFTStorage } = require('nft.storage');
+const fcl = require('@onflow/fcl');
+const t = require('@onflow/types');
+const SHA3 = require('sha3').SHA3;
+const EC = require('elliptic').ec;
 
-const ec = new EC("p256");
-const upload = multer({ dest: "uploads/" });
+const ec = new EC('p256');
+const upload = multer({ dest: 'uploads/' });
 const app = express();
 const port = 3000;
 
 const apiKey =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxQWFFQjBEZkNmMEJhNDM0ZDAyOGY3ODc1NTREMjQ1NmVGMTRGODEiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzNDM3ODM3MzIzNSwibmFtZSI6Im9tdXNlbyJ9.z32KODE2Z-DBcc1unmtCA6N04JnLWOu557pg7W1NUnc";
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxQWFFQjBEZkNmMEJhNDM0ZDAyOGY3ODc1NTREMjQ1NmVGMTRGODEiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzNDM3ODM3MzIzNSwibmFtZSI6Im9tdXNlbyJ9.z32KODE2Z-DBcc1unmtCA6N04JnLWOu557pg7W1NUnc';
 const client = new NFTStorage({ token: apiKey });
 
-const pk = "2fb9217f49d12e9e19ebbf19b0252b71bbd357870d29c3311bfd948b96ce129f";
-const admin = "0xf8d6e0586b0a20c7";
+const pk = '97874405d76faffbf102bedbd510b21c912db5bd41851159413a9b65b8ac28fe';
+const admin = '0x149f6592e6bbd04f';
 
-require('dotenv').config()
+require('dotenv').config();
 
-fcl.config()
-	// .put("env", "testnet") SSS: commenting this since dev env doesn't work with env set to testnet
-	.put("accessNode.api", process.env.ACCESS_NODE || "https://access-testnet.onflow.org")
-	.put("discovery.wallet", process.env.WALLET_DISCOVERY || "https://fcl-discovery.onflow.org/testnet/authn")
-	.put("0xOmuseoContract", process.env.OMUSEO_CONTRACT || admin);
+fcl
+  .config()
+  .put('accessNode.api', process.env.ACCESS_NODE || 'https://access-testnet.onflow.org')
+  .put('discovery.wallet', process.env.WALLET_DISCOVERY || 'https://fcl-discovery.onflow.org/testnet/authn')
+  .put('0xNonFungibleToken', '0x631e88ae7f1d7c20')
+  .put('0xOmuzeoItems', process.env.OMUSEO_CONTRACT || admin);
 
 function sign(privateKey, message) {
-	const key = ec.keyFromPrivate(Buffer.from(privateKey, "hex"));
-	const sha = new SHA3(256);
-	sha.update(Buffer.from(message, "hex"));
-	const digest = sha.digest();
-	const sig = key.sign(digest);
-	const n = 32;
-	const r = sig.r.toArrayLike(Buffer, "be", n);
-	const s = sig.s.toArrayLike(Buffer, "be", n);
-	return Buffer.concat([r, s]).toString("hex");
+  const key = ec.keyFromPrivate(Buffer.from(privateKey, 'hex'));
+  const sha = new SHA3(256);
+  sha.update(Buffer.from(message, 'hex'));
+  const digest = sha.digest();
+  const sig = key.sign(digest);
+  const n = 32;
+  const r = sig.r.toArrayLike(Buffer, 'be', n);
+  const s = sig.s.toArrayLike(Buffer, 'be', n);
+  return Buffer.concat([r, s]).toString('hex');
 }
 
 const authorizationFunction = () => {
-	return async (account) => {
-		const user = await getAccount(admin);
-		const key = user.keys[0];
+  return async (account) => {
+    const user = await getAccount(admin);
+    const key = user.keys[0];
 
-		return {
-			...account,
-			tempId: `${user.address}-${key.index}`,
-			addr: fcl.sansPrefix(user.address),
-			keyId: Number(key.index),
-			signingFunction: (signable) => {
-				return {
-					addr: fcl.withPrefix(user.address),
-					keyId: Number(key.index),
-					signature: sign(pk, signable.message),
-				};
-			},
-		};
-	};
+    return {
+      ...account,
+      tempId: `${user.address}-${key.index}`,
+      addr: fcl.sansPrefix(user.address),
+      keyId: Number(key.index),
+      signingFunction: (signable) => {
+        return {
+          addr: fcl.withPrefix(user.address),
+          keyId: Number(key.index),
+          signature: sign(pk, signable.message),
+        };
+      },
+    };
+  };
 };
 
 getAccount = async (addr) => {
-	const { account } = await fcl.send([fcl.getAccount(addr)]);
-	return account;
+  const { account } = await fcl.send([fcl.getAccount(addr)]);
+  return account;
 };
 
-app.post("/create", upload.single("image"), async (req, res) => {
-	try {
-		const metadata = await client.store({
-			name: "omuseo",
-			description: "omuseo",
-			image: new File([await fs.promises.readFile(req.file.path)], req.file.filename, {
-				type: req.file.mimetype,
-			}),
-		});
-		console.log(metadata.embed());
-		const authorization = authorizationFunction();
-		var item = {
-			name: req.body.name,
-			url: metadata.url,
-			image: metadata.embed().image.href,
-		};
-		var response = await fcl.send([
-			fcl.transaction`
-				import OmuseoContract from 0xOmuseoContract;
+app.post('/create', upload.single('image'), async (req, res) => {
+  try {
+    const metadata = await client.store({
+      name: req.body.name,
+      description: req.body.name,
+      image: new File([await fs.promises.readFile(req.file.path)], req.file.filename, {
+        type: req.file.mimetype,
+      }),
+    });
+    const authorization = authorizationFunction();
+    var response = await fcl.send([
+      fcl.transaction`
+    	import NonFungibleToken from 0xNonFungibleToken
+    	import OmuzeoItems from "0xOmuzeoItem"s
 
-				transaction(receiver: Address, metadata: {String : String}) {
-					let receiverRef: &{OmuseoContract.NFTReceiver}
-					let minterRef: &OmuseoContract.NFTMinter
+    	transaction(recipient: Address, metadata: String) {
+    		let minter: &OmuzeoItems.NFTMinter
 
-					prepare(acct: AuthAccount) {
-						let recipient = getAccount(receiver)
-						self.receiverRef = recipient.getCapability<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver)
-							.borrow()
-							?? panic("Could not borrow receiver reference")
+    		prepare(signer: AuthAccount) {
+    			self.minter = signer.borrow<&OmuzeoItems.NFTMinter>(from: OmuzeoItems.MinterStoragePath)
+    				?? panic("Could not borrow a reference to the NFT minter")
+    		}
 
-						self.minterRef = acct.borrow<&OmuseoContract.NFTMinter>(from: /storage/NFTMinter)
-							?? panic("Could not borrow minter reference")
-					}
+    		execute {
+    			let recipient = getAccount(recipient)
 
-					execute {
-						let newNFT <- self.minterRef.mint()
-						self.receiverRef.deposit(token: <-newNFT, metadata: metadata)
-					}
-				}
-			`,
-			fcl.args([
-				fcl.arg(req.body.receiver, t.Address),
-				fcl.arg(
-					Object.keys(item).map((k, i) => {
-						return { key: k, value: item[k] };
-					}),
-					t.Dictionary({ key: t.String, value: t.String })
-				),
-			]),
-			fcl.proposer(authorization),
-			fcl.authorizations([authorization]),
-			fcl.payer(authorization),
-			fcl.limit(9999),
-		]);
-		var transaction = await fcl.tx(response).onceSealed().then(fcl.decode);
+    			let receiver = recipient
+    				.getCapability(OmuzeoItems.CollectionPublicPath)!
+    				.borrow<&{NonFungibleToken.CollectionPublic}>()
+    				?? panic("Could not get receiver reference to the NFT Collection")
 
-		res.send(transaction);
-	} catch (error) {
-		console.log(error);
-		res.status(500).send(error);
-	}
+    			self.minter.mintNFT(recipient: receiver, metadata: metadata)
+    		}
+    	}`,
+      fcl.args([fcl.arg(req.body.receiver, t.Address), fcl.arg(metadata.embed().image.href, t.String)]),
+      fcl.proposer(authorization),
+      fcl.authorizations([authorization]),
+      fcl.payer(authorization),
+      fcl.limit(9999),
+    ]);
+    res.send(transaction);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 });
 
-app.get("/transfer/:receiver/:id", async (req, res) => {
-	try {
-		const authorization = authorizationFunction();
-		const metadata = {
-			lastOwner: admin,
-		};
-		var response = await fcl.send([
-			fcl.transaction`
+app.get('/transfer/:receiver/:id', async (req, res) => {
+  try {
+    const authorization = authorizationFunction();
+    const metadata = {
+      lastOwner: admin,
+    };
+    var response = await fcl.send([
+      fcl.transaction`
 				import OmuseoContract from 0xOmuseoContract;
 
 				transaction(receiver: Address, id: UInt64, metadata: {String : String}) {
@@ -157,55 +142,55 @@ app.get("/transfer/:receiver/:id", async (req, res) => {
 					}
 				}
 			`,
-			fcl.args([
-				fcl.arg(req.params.receiver, t.Address),
-				fcl.arg(parseInt(req.params.id), t.UInt64),
-				fcl.arg(
-					Object.keys(metadata).map((k, i) => {
-						return { key: k, value: metadata[k] };
-					}),
-					t.Dictionary({ key: t.String, value: t.String })
-				),
-			]),
-			fcl.proposer(authorization),
-			fcl.authorizations([authorization]),
-			fcl.payer(authorization),
-			fcl.limit(9999),
-		]);
-		var transaction = await fcl.tx(response).onceSealed();
+      fcl.args([
+        fcl.arg(req.params.receiver, t.Address),
+        fcl.arg(parseInt(req.params.id), t.UInt64),
+        fcl.arg(
+          Object.keys(metadata).map((k, i) => {
+            return { key: k, value: metadata[k] };
+          }),
+          t.Dictionary({ key: t.String, value: t.String }),
+        ),
+      ]),
+      fcl.proposer(authorization),
+      fcl.authorizations([authorization]),
+      fcl.payer(authorization),
+      fcl.limit(9999),
+    ]);
+    var transaction = await fcl.tx(response).onceSealed();
 
-		res.send(transaction);
-	} catch (error) {
-		console.log(error);
-		res.status(500).send(error);
-	}
+    res.send(transaction);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 });
 
-app.get("/nft", async (req, res) => {
-	try {
-		const ids = await fcl
-			.send([
-				fcl.script`
+app.get('/nft', async (req, res) => {
+  try {
+    const ids = await fcl
+      .send([
+        fcl.script`
 				import OmuseoContract from 0xOmuseoContract;
 				pub fun main() : [UInt64] {
 					return OmuseoContract.ownerMap.keys
 				}
 			`,
-			])
-			.then(fcl.decode);
-		ids.sort((a, b) => a - b);
-		res.send(ids);
-	} catch (error) {
-		console.log(error);
-		res.status(500).send(error);
-	}
+      ])
+      .then(fcl.decode);
+    ids.sort((a, b) => a - b);
+    res.send(ids);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 });
 
-app.get("/nft/:address/:id", async (req, res) => {
-	try {
-		const nft = await fcl
-			.send([
-				fcl.script`
+app.get('/nft/:address/:id', async (req, res) => {
+  try {
+    const nft = await fcl
+      .send([
+        fcl.script`
 					import OmuseoContract from 0xOmuseoContract;
 
 					pub fun main(address: Address, id: UInt64) : {String : String} {
@@ -216,25 +201,22 @@ app.get("/nft/:address/:id", async (req, res) => {
 						return receiverRef.getMetadata(id: id)
 					}
 				`,
-				fcl.args([
-					fcl.arg(parseInt(req.params.address), t.Address),
-					fcl.arg(parseInt(req.params.id), t.UInt64),
-				]),
-			])
-			.then(fcl.decode);
-		res.send(nft);
-	} catch (error) {
-		console.log(error);
-		res.status(500).send(error);
-	}
+        fcl.args([fcl.arg(parseInt(req.params.address), t.Address), fcl.arg(parseInt(req.params.id), t.UInt64)]),
+      ])
+      .then(fcl.decode);
+    res.send(nft);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
 });
 
-app.get("/account/:address", async (req, res) => {
-	const { account } = await fcl.send([fcl.getAccount(req.params.address)]);
-	const authorization = authorizationFunction();
-	const collection = await fcl
-		.send([
-			fcl.script`
+app.get('/account/:address', async (req, res) => {
+  const { account } = await fcl.send([fcl.getAccount(req.params.address)]);
+  const authorization = authorizationFunction();
+  const collection = await fcl
+    .send([
+      fcl.script`
 			import OmuseoContract from 0xOmuseoContract;
 
 			pub fun main(address: Address): Bool {
@@ -244,16 +226,16 @@ app.get("/account/:address", async (req, res) => {
 				return receiverRef == nil ? false : true
 			}
 		`,
-			fcl.args([fcl.arg(req.params.address, t.Address)]),
-			fcl.proposer(authorization),
-			fcl.authorizations([authorization]),
-			fcl.payer(authorization),
-			fcl.limit(9999),
-		])
-		.then(fcl.decode);
-	const ids = await fcl
-		.send([
-			fcl.script`
+      fcl.args([fcl.arg(req.params.address, t.Address)]),
+      fcl.proposer(authorization),
+      fcl.authorizations([authorization]),
+      fcl.payer(authorization),
+      fcl.limit(9999),
+    ])
+    .then(fcl.decode);
+  const ids = await fcl
+    .send([
+      fcl.script`
 			import OmuseoContract from 0xOmuseoContract;
 
 			pub fun main(address: Address): [UInt64] {
@@ -264,21 +246,21 @@ app.get("/account/:address", async (req, res) => {
 				return receiverRef.getIds()
 			}
 		`,
-			fcl.args([fcl.arg(req.params.address, t.Address)]),
-			fcl.proposer(authorization),
-			fcl.authorizations([authorization]),
-			fcl.payer(authorization),
-			fcl.limit(9999),
-		])
-		.then(fcl.decode);
+      fcl.args([fcl.arg(req.params.address, t.Address)]),
+      fcl.proposer(authorization),
+      fcl.authorizations([authorization]),
+      fcl.payer(authorization),
+      fcl.limit(9999),
+    ])
+    .then(fcl.decode);
 
-	res.send({
-		account,
-		collection,
-		ids,
-	});
+  res.send({
+    account,
+    collection,
+    ids,
+  });
 });
 
 app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`Example app listening at http://localhost:${port}`);
 });

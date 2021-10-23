@@ -1,7 +1,10 @@
-import React, { useState, useContext } from 'react';
+import { Box, Tab, Tabs, Typography } from '@mui/material';
+import * as fcl from '@onflow/fcl';
+import * as t from '@onflow/types';
 import axios from 'axios';
+import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../AuthContext';
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import NFT from '../components/NFT';
 import QuiltedImageList from '../components/QuiltedImageList';
 
 function TabPanel(props) {
@@ -35,6 +38,31 @@ const Artworks = () => {
   const { user } = useContext(AuthContext);
 
   const [value, setValue] = React.useState(0);
+  const [ids, setIDs] = useState([]);
+
+  useEffect(() => {
+    try {
+      fcl
+        .send([
+          fcl.script(`
+        import NonFungibleToken from 0xNonFungibleToken
+        import OmuzeoItems from 0xOmuzeoItems
+
+        pub fun main(address: Address): [UInt64] {
+          let account = getAccount(address)
+          let collectionRef = account.getCapability(OmuzeoItems.CollectionPublicPath)!.borrow<&{NonFungibleToken.CollectionPublic}>()
+            ?? panic("Could not borrow capability from public collection")
+          return collectionRef.getIDs()
+        }`),
+          fcl.args([fcl.arg(user.addr, t.Address)]),
+        ])
+        .then(fcl.decode)
+        .then((id) => id.sort((a, b) => a - b))
+        .then(setIDs);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [user.addr]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -110,6 +138,7 @@ const Artworks = () => {
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Create an artwork" {...a11yProps(0)} />
           <Tab label="Show artworks" {...a11yProps(1)} />
+          <Tab label="Show ids" {...a11yProps(2)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -117,6 +146,11 @@ const Artworks = () => {
       </TabPanel>
       <TabPanel value={value} index={1}>
         {showQuiltedImageList()}
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        {ids.map((id) => (
+          <NFT key={id} address={user.addr} id={id} />
+        ))}
       </TabPanel>
     </>
   );

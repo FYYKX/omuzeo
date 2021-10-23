@@ -1,6 +1,5 @@
-import { createContext, useEffect, useState } from 'react';
 import * as fcl from '@onflow/fcl';
-import * as t from '@onflow/types';
+import { createContext, useEffect, useState } from 'react';
 
 // import { useHistory } from 'react-router';
 
@@ -12,6 +11,7 @@ const AuthContextProvider = (props) => {
 
   useEffect(() => {
     fcl.currentUser().subscribe(async (user) => {
+      console.log(user);
       setUser({ ...user });
     });
   }, []);
@@ -28,26 +28,26 @@ const AuthContextProvider = (props) => {
     event.preventDefault();
 
     try {
-      const transactionId = await fcl
-        .send([
-          fcl.transaction`
-          import OmuseoContract from 0xOmuseoContract
+      const transactionId = await fcl.send([
+        fcl.transaction`
+          import NonFungibleToken from 0xNonFungibleToken
+          import OmuzeoItems from 0xOmuzeoItems
 
           transaction {
-            prepare(acct: AuthAccount) {
-              let collection <- OmuseoContract.createEmptyCollection()
-              acct.save<@OmuseoContract.Collection>(<-collection, to: /storage/NFTCollection)
-              acct.link<&{OmuseoContract.NFTReceiver}>(/public/NFTReceiver, target: /storage/NFTCollection)
+            prepare(signer: AuthAccount) {
+              if signer.borrow<&OmuzeoItems.Collection>(from: OmuzeoItems.CollectionStoragePath) == nil {
+                let collection <- OmuzeoItems.createEmptyCollection()
+                signer.save(<-collection, to: OmuzeoItems.CollectionStoragePath)
+                signer.link<&OmuzeoItems.Collection{NonFungibleToken.CollectionPublic, OmuzeoItems.OmuzeoItemsCollectionPublic}>(OmuzeoItems.CollectionPublicPath, target: OmuzeoItems.CollectionStoragePath)
+              }
             }
-          }
-        `,
-          fcl.args([]),
-          fcl.payer(fcl.authz),
-          fcl.proposer(fcl.authz),
-          fcl.authorizations([fcl.authz]),
-          fcl.limit(9999),
-        ])
-        .then(fcl.decode);
+          }`,
+        fcl.args([]),
+        fcl.payer(fcl.authz),
+        fcl.proposer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.limit(9999),
+      ]);
       console.log(transactionId);
       const result = await fcl.tx(transactionId).onceSealed();
 
