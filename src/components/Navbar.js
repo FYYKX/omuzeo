@@ -10,6 +10,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
+import OmuzeoLogo from './omuzeo-logo-name.png'
 
 const useStyles = makeStyles((theme) => ({
   navLinks: {
@@ -17,11 +18,13 @@ const useStyles = makeStyles((theme) => ({
   },
   link: {
     textDecoration: 'none',
-    color: 'white',
+    color: '#ff00ab',
+    fontFamily: 'Montserrat',
+    fontWeight: '600',
     fontSize: '20px',
     marginRight: theme.spacing(20),
     '&:hover': {
-      color: 'yellow',
+      color: 'black',
       borderBottom: '1px solid white',
     },
   },
@@ -45,13 +48,13 @@ const Navbar = () => {
   };
 
   const showSignUpButton = () => (
-    <Button color="inherit" onClick={logIn}>
+    <Button color="primary" variant="contained" onClick={logIn}>
       Sign Up / Log In
     </Button>
   );
 
   const showUserIcon = () => (
-    <IconButton edge="start" color="inherit" aria-label="menu" className={classes.navLinks} onClick={handleClickUser}>
+    <IconButton edge="start" color="primary" aria-label="menu" className={classes.navLinks} onClick={handleClickUser}>
       <AccountCircleOutlinedIcon />
     </IconButton>
   );
@@ -107,7 +110,8 @@ const Navbar = () => {
 
   return (
     <AppBar position="static">
-      <Toolbar>
+      <Toolbar style={{backgroundColor: 'white'}}>
+        <img src={OmuzeoLogo} alt="Omuzeo Logo" height={50} width="auto" style={{marginRight: '20px'}}/>
         <Typography variant="h6" className={classes.title}>
           <div className={classes.navLinks}>
             <Link to="/" className={classes.link}>
