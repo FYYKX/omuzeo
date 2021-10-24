@@ -1,15 +1,15 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../AuthContext';
-import { makeStyles } from '@mui/styles';
+import { Logout } from '@mui/icons-material';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import { makeStyles } from '@mui/styles';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Avatar, Divider, ListItemIcon, MenuItem, Menu } from '@mui/material';
-import { Logout } from '@mui/icons-material';
+import { AuthContext } from '../AuthContext';
 
 const useStyles = makeStyles((theme) => ({
   navLinks: {
@@ -56,8 +56,6 @@ const Navbar = () => {
     </IconButton>
   );
 
-  const showActivateCollectionButton = () => <button onClick={activateCollection}>Activate Collection</button>;
-
   const showAccountDropdown = () => (
     <Menu
       anchorEl={anchorEl}
@@ -93,12 +91,10 @@ const Navbar = () => {
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      <MenuItem component={Link} to="/profile">
-        <Avatar /> Profile
-      </MenuItem>
       <MenuItem component={Link} to="/account">
-        <Avatar /> My account
+        {user.addr}
       </MenuItem>
+      {user?.loggedIn && !hasCollection && <MenuItem onClick={activateCollection}>Activate Collection</MenuItem>}
       <Divider />
       <MenuItem onClick={logOut}>
         <ListItemIcon>
@@ -126,10 +122,12 @@ const Navbar = () => {
             <Link to="/messages" className={classes.link}>
               Messages
             </Link>
+            <Link to="/sales" className={classes.link}>
+              Sales
+            </Link>
           </div>
         </Typography>
 
-        {user?.loggedIn && !hasCollection && showActivateCollectionButton()}
         {!user?.loggedIn ? showSignUpButton() : showUserIcon()}
         {showAccountDropdown()}
       </Toolbar>

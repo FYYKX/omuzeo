@@ -32,6 +32,7 @@ const AuthContextProvider = (props) => {
         fcl.transaction`
           import NonFungibleToken from 0xNonFungibleToken
           import OmuzeoItems from 0xOmuzeoItems
+          import NFTStorefront from 0xNFTStorefront
 
           transaction {
             prepare(signer: AuthAccount) {
@@ -40,15 +41,18 @@ const AuthContextProvider = (props) => {
                 signer.save(<-collection, to: OmuzeoItems.CollectionStoragePath)
                 signer.link<&OmuzeoItems.Collection{NonFungibleToken.CollectionPublic, OmuzeoItems.OmuzeoItemsCollectionPublic}>(OmuzeoItems.CollectionPublicPath, target: OmuzeoItems.CollectionStoragePath)
               }
+              if signer.borrow<&NFTStorefront.Storefront>(from: NFTStorefront.StorefrontStoragePath) == nil {
+                let storefront <- NFTStorefront.createStorefront() as! @NFTStorefront.Storefront
+                signer.save(<-storefront, to: NFTStorefront.StorefrontStoragePath)
+                signer.link<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath, target: NFTStorefront.StorefrontStoragePath)
+              }
             }
           }`,
-        fcl.args([]),
         fcl.payer(fcl.authz),
         fcl.proposer(fcl.authz),
         fcl.authorizations([fcl.authz]),
-        fcl.limit(9999),
+        fcl.limit(100),
       ]);
-      console.log(transactionId);
       const result = await fcl.tx(transactionId).onceSealed();
 
       if (result?.errorMessage === '') setHasCollection(true);

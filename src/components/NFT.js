@@ -10,37 +10,41 @@ import React, { useEffect, useState } from 'react';
 function NFT({ address, id }) {
   const [metadata, setMetadata] = useState({});
   useEffect(() => {
-    fcl
-      .send([
-        fcl.script(`
-        import NonFungibleToken from 0xNonFungibleToken
-        import OmuzeoItems from 0xOmuzeoItems
+    try {
+      fcl
+        .send([
+          fcl.script(`
+            import NonFungibleToken from 0xNonFungibleToken
+            import OmuzeoItems from 0xOmuzeoItems
 
-        pub struct AccountItem {
-          pub let tokenId: UInt64
-          pub let metadata: String
-          pub let owner: Address
+            pub struct AccountItem {
+              pub let tokenId: UInt64
+              pub let metadata: String
+              pub let owner: Address
 
-          init(tokenId: UInt64, metadata: String, owner: Address) {
-            self.tokenId = tokenId
-            self.metadata = metadata
-            self.owner = owner
-          }
-        }
-
-        pub fun main(address: Address, id: UInt64): AccountItem? {
-          if let col = getAccount(address).getCapability<&OmuzeoItems.Collection{NonFungibleToken.CollectionPublic, OmuzeoItems.OmuzeoItemsCollectionPublic}>(OmuzeoItems.CollectionPublicPath).borrow() {
-            if let item = col.borrowOmuzeoItem(id: id) {
-              return AccountItem(tokenId: id, metadata: item.metadata, owner: address)
+              init(tokenId: UInt64, metadata: String, owner: Address) {
+                self.tokenId = tokenId
+                self.metadata = metadata
+                self.owner = owner
+              }
             }
-          }
 
-          return nil
-        }`),
-        fcl.args([fcl.arg(address, t.Address), fcl.arg(Number(id), t.UInt64)]),
-      ])
-      .then(fcl.decode)
-      .then(setMetadata);
+            pub fun main(address: Address, id: UInt64): AccountItem? {
+              if let col = getAccount(address).getCapability<&OmuzeoItems.Collection{NonFungibleToken.CollectionPublic, OmuzeoItems.OmuzeoItemsCollectionPublic}>(OmuzeoItems.CollectionPublicPath).borrow() {
+                if let item = col.borrowOmuzeoItem(id: id) {
+                  return AccountItem(tokenId: id, metadata: item.metadata, owner: address)
+                }
+              }
+
+              return nil
+            }`),
+          fcl.args([fcl.arg(address, t.Address), fcl.arg(Number(id), t.UInt64)]),
+        ])
+        .then(fcl.decode)
+        .then(setMetadata);
+    } catch (error) {
+      console.log(error);
+    }
   }, [address, id]);
   return (
     <Card sx={{ maxWidth: 345 }}>

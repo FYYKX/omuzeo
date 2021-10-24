@@ -16,5 +16,8 @@ fcl
   .config()
   .put('accessNode.api', 'https://access-testnet.onflow.org')
   .put('discovery.wallet', 'https://fcl-discovery.onflow.org/testnet/authn')
+  .put('0xFungibleToken', '0x9a0766d93b6608b7')
+  .put('0xFlowToken', '0x7e60df042a9c0868')
   .put('0xNonFungibleToken', '0x631e88ae7f1d7c20')
+  .put('0xNFTStorefront', '0x94b06cfca1d8a476')
   .put('0xOmuzeoItems', '0x149f6592e6bbd04f');
