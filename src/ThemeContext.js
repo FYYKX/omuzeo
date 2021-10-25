@@ -20,6 +20,9 @@ const theme = createTheme({
   typography: {
     fontFamily: 'Helvetica Neue',
     fontSize: 14,
+    button: {
+      textTransform: 'none',
+    },
   },
 });
 

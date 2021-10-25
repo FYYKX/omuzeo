@@ -11,12 +11,14 @@ import Messages from './pages/Messages';
 import Sales from './pages/Sales';
 import PrivateRoute from './PrivateRoute';
 import theme from './ThemeContext';
+import BasicCollectionActivationAlert from "./components/BasicCollectionActivationAlert";
 
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <AuthContextProvider>
         <Router>
+          <BasicCollectionActivationAlert />
           <Navbar />
           <Switch>
             <Route exact path="/" component={Home} />
