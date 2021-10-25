@@ -1,14 +1,16 @@
 import { CardActionArea } from '@mui/material';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
+import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
 
 function NFT({ address, id }) {
-  const [metadata, setMetadata] = useState({});
+  const [metadata, setMetadata] = useState({ isLoading: true });
   useEffect(() => {
     try {
       fcl
@@ -46,6 +48,15 @@ function NFT({ address, id }) {
       console.log(error);
     }
   }, [address, id]);
+
+  if (metadata.isLoading) {
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Card sx={{ maxWidth: 345 }}>
       <CardActionArea>

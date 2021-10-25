@@ -1,4 +1,5 @@
 import * as fcl from '@onflow/fcl';
+import * as t from '@onflow/types';
 import { createContext, useEffect, useState } from 'react';
 
 // import { useHistory } from 'react-router';
@@ -29,6 +30,29 @@ const AuthContextProvider = (props) => {
 
   const getLoggedInStateFromLocalStorage = () => JSON.parse(localStorage.getItem('OMUZEO_IS_LOGGED_IN'));
 
+  const checkCollection = async () => {
+    try {
+      fcl
+        .send([
+          fcl.script(`
+            import OmuzeoItems from 0xOmuzeoItems
+            import NFTStorefront from 0xNFTStorefront
+            import NonFungibleToken from 0xNonFungibleToken
+
+            pub fun main(address: Address): Bool {
+              let account = getAccount(address)
+              let hasOmuzeoItems = account.getCapability<&OmuzeoItems.Collection{NonFungibleToken.CollectionPublic, OmuzeoItems.OmuzeoItemsCollectionPublic}>(OmuzeoItems.CollectionPublicPath).check()
+              let hasNFTStorefront = account.getCapability<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath).check()
+              return hasOmuzeoItems && hasNFTStorefront
+            }`),
+          fcl.args([fcl.arg(user.addr, t.Address)]),
+        ])
+        .then(fcl.decode)
+        .then(setHasCollection);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const activateCollection = async (event) => {
     event.preventDefault();

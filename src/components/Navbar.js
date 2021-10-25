@@ -7,10 +7,12 @@ import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import React, { useContext, useState } from 'react';
+import * as fcl from '@onflow/fcl';
+import * as t from '@onflow/types';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import OmuzeoLogo from './omuzeo-logo-name.png'
+import OmuzeoLogo from './omuzeo-logo-name.png';
 
 const useStyles = makeStyles((theme) => ({
   navLinks: {
@@ -38,7 +40,34 @@ const Navbar = () => {
   const classes = useStyles();
 
   const [anchorEl, setAnchorEl] = useState(null);
+  const [balance, setBalance] = useState(null);
   const openUser = Boolean(anchorEl);
+
+  useEffect(() => {
+    try {
+      fcl
+        .send([
+          fcl.script(`
+              import FungibleToken from 0xFungibleToken
+              import FlowToken from 0xFlowToken
+
+              pub fun main(address: Address): UFix64 {
+                let vaultRef = getAccount(address)
+                  .getCapability(/public/flowTokenBalance)
+                  .borrow<&FlowToken.Vault{FungibleToken.Balance}>()
+                  ?? panic("Could not borrow Balance reference to the Vault");
+
+                return vaultRef.balance;
+              }
+            `),
+          fcl.args([fcl.arg(user.addr, t.Address)]),
+        ])
+        .then(fcl.decode)
+        .then(setBalance);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [user]);
 
   const handleClickUser = (event) => {
     setAnchorEl(event.currentTarget);
@@ -97,7 +126,12 @@ const Navbar = () => {
       <MenuItem component={Link} to="/account">
         {user.addr}
       </MenuItem>
-      {user?.loggedIn && !hasCollection && <MenuItem onClick={activateCollection}>Activate Collection</MenuItem>}
+      {user?.loggedIn && !hasCollection && (
+        <>
+          <MenuItem>{balance === null ? 'loading...' : `${balance} FLOW`}</MenuItem>
+          <MenuItem onClick={activateCollection}>Activate Collection</MenuItem>
+        </>
+      )}
       <Divider />
       <MenuItem onClick={logOut}>
         <ListItemIcon>
@@ -110,8 +144,8 @@ const Navbar = () => {
 
   return (
     <AppBar position="static">
-      <Toolbar style={{backgroundColor: 'white'}}>
-        <img src={OmuzeoLogo} alt="Omuzeo Logo" height={50} width="auto" style={{marginRight: '20px'}}/>
+      <Toolbar style={{ backgroundColor: 'white' }}>
+        <img src={OmuzeoLogo} alt="Omuzeo Logo" height={50} width="auto" style={{ marginRight: '20px' }} />
         <Typography variant="h6" className={classes.title}>
           <div className={classes.navLinks}>
             <Link to="/" className={classes.link}>
