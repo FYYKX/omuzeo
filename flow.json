@@ -13,7 +13,8 @@
         "testnet": "0x631e88ae7f1d7c20"
       }
     },
-    "OmuzeoItems": "cadence/contracts/OmuzeoItems.cdc"
+    "OmuzeoItems": "cadence/contracts/OmuzeoItems.cdc",
+    "OmuzeoNFT": "cadence/contracts/OmuzeoNFT.cdc"
   },
   "networks": {
     "emulator": "127.0.0.1:3569",
@@ -36,16 +37,16 @@
       }
     },
     "testnet-account": {
-      "address": "0x149f6592e6bbd04f",
-      "key": "97874405d76faffbf102bedbd510b21c912db5bd41851159413a9b65b8ac28fe"
+      "address": "0x8984ae801f05c39a",
+      "key": "aaf786845222b661d397fc4a9a188ca2adeb7b6c723637da281757552e878f5b"
     }
   },
   "deployments": {
     "emulator": {
-      "emulator-account": ["OmuzeoItems"]
+      "emulator-account": ["OmuzeoItems", "OmuzeoNFT"]
     },
     "testnet": {
-      "testnet-account": ["OmuzeoItems"]
+      "testnet-account": ["OmuzeoItems", "OmuzeoNFT"]
     }
   },
   "app.detail.title": "Omuzeo"
