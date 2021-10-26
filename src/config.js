@@ -20,4 +20,5 @@ fcl
   .put('0xFlowToken', '0x7e60df042a9c0868')
   .put('0xNonFungibleToken', '0x631e88ae7f1d7c20')
   .put('0xNFTStorefront', '0x94b06cfca1d8a476')
-  .put('0xOmuzeoItems', '0x149f6592e6bbd04f');
+  .put('0xOmuzeoItems', '0x8984ae801f05c39a')
+  .put('0xOmuzeoNFT', '0x8984ae801f05c39a');

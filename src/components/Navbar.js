@@ -45,25 +45,24 @@ const Navbar = () => {
 
   useEffect(() => {
     try {
-      fcl
-        .send([
-          fcl.script(`
+      if (user.addr) {
+        fcl
+          .send([
+            fcl.script(`
               import FungibleToken from 0xFungibleToken
               import FlowToken from 0xFlowToken
 
               pub fun main(address: Address): UFix64 {
-                let vaultRef = getAccount(address)
-                  .getCapability(/public/flowTokenBalance)
-                  .borrow<&FlowToken.Vault{FungibleToken.Balance}>()
+                let vaultRef = getAccount(address).getCapability(/public/flowTokenBalance).borrow<&FlowToken.Vault{FungibleToken.Balance}>()
                   ?? panic("Could not borrow Balance reference to the Vault");
-
                 return vaultRef.balance;
               }
             `),
-          fcl.args([fcl.arg(user.addr, t.Address)]),
-        ])
-        .then(fcl.decode)
-        .then(setBalance);
+            fcl.args([fcl.arg(user.addr, t.Address)]),
+          ])
+          .then(fcl.decode)
+          .then(setBalance);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -126,12 +125,8 @@ const Navbar = () => {
       <MenuItem component={Link} to="/account">
         {user.addr}
       </MenuItem>
-      {user?.loggedIn && !hasCollection && (
-        <>
-          <MenuItem>{balance === null ? 'loading...' : `${balance} FLOW`}</MenuItem>
-          <MenuItem onClick={activateCollection}>Activate Collection</MenuItem>
-        </>
-      )}
+      {user?.loggedIn && <MenuItem>{balance === null ? 'loading...' : `${balance} FLOW`}</MenuItem>}
+      {user?.loggedIn && !hasCollection && <MenuItem onClick={activateCollection}>Activate Collection</MenuItem>}
       <Divider />
       <MenuItem onClick={logOut}>
         <ListItemIcon>
@@ -162,6 +157,9 @@ const Navbar = () => {
             </Link>
             <Link to="/sales" className={classes.link}>
               Sales
+            </Link>
+            <Link to="/marketplace" className={classes.link}>
+              Marketplace
             </Link>
           </div>
         </Typography>

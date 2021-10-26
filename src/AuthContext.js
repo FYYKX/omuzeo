@@ -17,6 +17,9 @@ const AuthContextProvider = (props) => {
       else localStorage.setItem('OMUZEO_IS_LOGGED_IN', 'false');
 
       setUser({ ...user });
+      if (user.loggedIn) {
+        checkCollection(user.addr);
+      }
     });
   }, []);
 
@@ -30,38 +33,40 @@ const AuthContextProvider = (props) => {
 
   const getLoggedInStateFromLocalStorage = () => JSON.parse(localStorage.getItem('OMUZEO_IS_LOGGED_IN'));
 
-  const checkCollection = async () => {
+  const checkCollection = async (address) => {
     try {
       fcl
         .send([
           fcl.script(`
             import OmuzeoItems from 0xOmuzeoItems
-            import NFTStorefront from 0xNFTStorefront
+            import OmuzeoNFT from 0xOmuzeoNFT
             import NonFungibleToken from 0xNonFungibleToken
+            import NFTStorefront from 0xNFTStorefront
 
             pub fun main(address: Address): Bool {
               let account = getAccount(address)
               let hasOmuzeoItems = account.getCapability<&OmuzeoItems.Collection{NonFungibleToken.CollectionPublic, OmuzeoItems.OmuzeoItemsCollectionPublic}>(OmuzeoItems.CollectionPublicPath).check()
+              let hasOmuzeoNFT = account.getCapability<&OmuzeoNFT.Collection{NonFungibleToken.CollectionPublic, OmuzeoNFT.OmuzeoNFTCollectionPublic}>(OmuzeoNFT.CollectionPublicPath).check()
               let hasNFTStorefront = account.getCapability<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath).check()
-              return hasOmuzeoItems && hasNFTStorefront
+              return hasOmuzeoItems && hasOmuzeoNFT && hasNFTStorefront
             }`),
-          fcl.args([fcl.arg(user.addr, t.Address)]),
+          fcl.args([fcl.arg(address, t.Address)]),
         ])
         .then(fcl.decode)
         .then(setHasCollection);
     } catch (error) {
       console.log(error);
+      setHasCollection(false);
     }
   };
 
-  const activateCollection = async (event) => {
-    event.preventDefault();
-
+  const activateCollection = async () => {
     try {
-      const transactionId = await fcl.send([
+      const txId = await fcl.send([
         fcl.transaction`
-          import NonFungibleToken from 0xNonFungibleToken
           import OmuzeoItems from 0xOmuzeoItems
+          import OmuzeoNFT from 0xOmuzeoNFT
+          import NonFungibleToken from 0xNonFungibleToken
           import NFTStorefront from 0xNFTStorefront
 
           transaction {
@@ -70,6 +75,11 @@ const AuthContextProvider = (props) => {
                 let collection <- OmuzeoItems.createEmptyCollection()
                 signer.save(<-collection, to: OmuzeoItems.CollectionStoragePath)
                 signer.link<&OmuzeoItems.Collection{NonFungibleToken.CollectionPublic, OmuzeoItems.OmuzeoItemsCollectionPublic}>(OmuzeoItems.CollectionPublicPath, target: OmuzeoItems.CollectionStoragePath)
+              }
+              if signer.borrow<&OmuzeoNFT.Collection>(from: OmuzeoNFT.CollectionStoragePath) == nil {
+                let collection <- OmuzeoNFT.createEmptyCollection()
+                signer.save(<-collection, to: OmuzeoNFT.CollectionStoragePath)
+                signer.link<&OmuzeoNFT.Collection{NonFungibleToken.CollectionPublic, OmuzeoNFT.OmuzeoNFTCollectionPublic}>(OmuzeoNFT.CollectionPublicPath, target: OmuzeoNFT.CollectionStoragePath)
               }
               if signer.borrow<&NFTStorefront.Storefront>(from: NFTStorefront.StorefrontStoragePath) == nil {
                 let storefront <- NFTStorefront.createStorefront() as! @NFTStorefront.Storefront
@@ -83,12 +93,11 @@ const AuthContextProvider = (props) => {
         fcl.authorizations([fcl.authz]),
         fcl.limit(100),
       ]);
-      const result = await fcl.tx(transactionId).onceSealed();
-
-      if (result?.errorMessage === '') setHasCollection(true);
+      const result = await fcl.tx(txId).onceSealed();
+      console.log('setup account success');
+      setHasCollection(true);
     } catch (error) {
-      console.error(error);
-      setHasCollection(false);
+      console.log(error);
     }
   };
 
