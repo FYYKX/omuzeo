@@ -93,7 +93,7 @@ const AuthContextProvider = (props) => {
         fcl.authorizations([fcl.authz]),
         fcl.limit(100),
       ]);
-      const result = await fcl.tx(txId).onceSealed();
+      await fcl.tx(txId).onceSealed();
       console.log('setup account success');
       setHasCollection(true);
     } catch (error) {

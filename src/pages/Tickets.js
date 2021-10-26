@@ -1,4 +1,4 @@
-import { Alert, Card, CardContent, CardHeader, CircularProgress, Container, Grid, Typography } from '@mui/material';
+import { Card, CardContent, CardHeader, CircularProgress, Container, Grid, Typography } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useContext, useEffect, useState } from 'react';
@@ -7,7 +7,6 @@ import { AuthContext } from '../AuthContext';
 function Tickets() {
   const { user } = useContext(AuthContext);
   const [nft, setNFT] = useState({ isLoading: true });
-  const [status, setStatus] = useState({ isLoading: false, error: '' });
 
   useEffect(() => {
     const fetchData = async (address) => {
@@ -44,7 +43,6 @@ function Tickets() {
 
   return (
     <Container>
-      {status.error && <Alert severity="error">{status.error}</Alert>}
       <Grid container spacing={4}>
         {nft.tickets.map((t) => (
           <Grid item xs="auto" key={t}>
