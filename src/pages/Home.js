@@ -1,12 +1,10 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../AuthContext';
-import {InputAdornment, TextField, Grid} from '@mui/material';
-import IconButton from '@mui/material/IconButton';
 import { Search } from '@mui/icons-material';
+import { InputAdornment, TextField } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import React, { useState } from 'react';
 import QuiltedImageList from '../components/QuiltedImageList';
 
 const Home = () => {
-  const { user } = useContext(AuthContext);
   const [searchText, setSearchText] = useState('');
 
   const handleSearchTextChange = (evt) => {
@@ -22,8 +20,6 @@ const Home = () => {
   const handleSearchTextClick = (evt) => {
     // TODO: send api request to backend!
   };
-
-  if(!user.loggedIn) return <Grid container><div>log in please</div></Grid>
 
   return (
     <>

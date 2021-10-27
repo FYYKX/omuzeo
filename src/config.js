@@ -19,6 +19,7 @@ console.log('flow token ', process.env.REACT_APP_FLOW_TOKEN);
 console.log('nonfungible token ', process.env.REACT_APP_NONFUNGIBLE_TOKEN);
 console.log('nft storefront', process.env.REACT_APP_NFT_STOREFRONT);
 console.log('omuzeo items', process.env.REACT_APP_OMUZEO_ITEMS);
+console.log('omuzeo nft', process.env.REACT_APP_OMUZEO_NFT);
 
 fcl
   .config()
@@ -28,5 +29,6 @@ fcl
   .put('0xFlowToken', process.env.REACT_APP_FLOW_TOKEN || '0x7e60df042a9c0868')
   .put('0xNonFungibleToken', process.env.REACT_APP_NONFUNGIBLE_TOKEN || '0x631e88ae7f1d7c20')
   .put('0xNFTStorefront', process.env.REACT_APP_NFT_STOREFRONT || '0x94b06cfca1d8a476')
-  .put('0xOmuzeoItems', process.env.REACT_APP_OMUZEO_ITEMS || '0x149f6592e6bbd04f');
+  .put('0xOmuzeoItems', process.env.REACT_APP_OMUZEO_ITEMS || '0x8984ae801f05c39a')
+  .put('0xOmuzeoNFT', process.env.REACT_APP_OMUZEO_NFT || '0x8984ae801f05c39a');
 
