@@ -67,7 +67,7 @@ function OmuzeoNFT({ address, id }) {
     });
   }
 
-  async function sell(ticketID, creator) {
+  async function sellTicket(ticketID, price, creator) {
     let txId;
     try {
       txId = await fcl.send([
@@ -122,7 +122,76 @@ function OmuzeoNFT({ address, id }) {
             )
           }
         }`),
-        fcl.args([fcl.arg(Number(ticketID), t.UInt64), fcl.arg(String('10.0'), t.UFix64), fcl.arg(creator, t.Address)]),
+        fcl.args([fcl.arg(Number(ticketID), t.UInt64), fcl.arg(price.toFixed(2), t.UFix64), fcl.arg(creator, t.Address)]),
+        fcl.proposer(fcl.authz),
+        fcl.payer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.limit(1000),
+      ]);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+
+    fcl.tx(txId).subscribe((tx) => {
+      if (tx.errorMessage) {
+        console.log(tx);
+        return;
+      }
+      if (fcl.tx.isSealed(tx)) {
+        console.log('%clisting ticket success!', 'color: limegreen;');
+      }
+    });
+  }
+
+  async function sell(id, price) {
+    let txId;
+    try {
+      txId = await fcl.send([
+        fcl.transaction(`
+        import FungibleToken from 0xFungibleToken
+        import NonFungibleToken from 0xNonFungibleToken
+        import FlowToken from 0xFlowToken
+        import OmuzeoNFT from 0xOmuzeoNFT
+        import NFTStorefront from 0xNFTStorefront
+
+        transaction(saleItemID: UInt64, saleItemPrice: UFix64) {
+          let flowReceiver: Capability<&FlowToken.Vault{FungibleToken.Receiver}>
+          let omuzeoNFTProvider: Capability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>
+          let storefront: &NFTStorefront.Storefront
+
+          prepare(acct: AuthAccount) {
+            let omuzeoNFTCollectionProviderPrivatePath = /private/OmuzeoNFTCollectionProviderForNFTStorefront
+
+            self.flowReceiver = acct.getCapability<&FlowToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)!
+            assert(self.flowReceiver.borrow() != nil, message: "Missing or mis-typed FlowToken receiver")
+
+            if !acct.getCapability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath)!.check() {
+              acct.link<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath, target: OmuzeoNFT.CollectionStoragePath)
+            }
+
+            self.omuzeoNFTProvider = acct.getCapability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath)!
+            assert(self.omuzeoNFTProvider.borrow() != nil, message: "Missing or mis-typed OmuzeoNFT.Collection provider")
+
+            self.storefront = acct.borrow<&NFTStorefront.Storefront>(from: NFTStorefront.StorefrontStoragePath)
+              ?? panic("Missing or mis-typed NFTStorefront Storefront")
+          }
+
+          execute {
+            let saleCut = NFTStorefront.SaleCut(
+              receiver: self.flowReceiver,
+              amount: saleItemPrice
+            )
+            self.storefront.createListing(
+              nftProviderCapability: self.omuzeoNFTProvider,
+              nftType: Type<@OmuzeoNFT.NFT>(),
+              nftID: saleItemID,
+              salePaymentVaultType: Type<@FlowToken.Vault>(),
+              saleCuts: [saleCut]
+            )
+          }
+        }`),
+        fcl.args([fcl.arg(Number(id), t.UInt64), fcl.arg(price.toFixed(2), t.UFix64)]),
         fcl.proposer(fcl.authz),
         fcl.payer(fcl.authz),
         fcl.authorizations([fcl.authz]),
@@ -162,14 +231,17 @@ function OmuzeoNFT({ address, id }) {
         </CardContent>
         <CardContent>
           {metadata.tickets.map((id) => (
-            <Button variant="outlined" color="success" key={id} onClick={() => sell(id, metadata.creator)}>
-              Sell Ticket {id}
+            <Button variant="outlined" color="success" key={id} onClick={() => sellTicket(id, 10, metadata.creator)}>
+              Sell Ticket {id} with 10 Flows
             </Button>
           ))}
         </CardContent>
         <CardActions>
           <Button variant="contained" onClick={() => createTickets(5)}>
             Create 5 Tickets
+          </Button>
+          <Button variant="contained" onClick={() => sell(id, 11)}>
+            Sell with 20 Flows
           </Button>
         </CardActions>
       </Card>

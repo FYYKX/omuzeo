@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import Sale from '../components/Sale';
 
 function Sales() {
-  const address = '0x154880e843e25e08';
+  const address = '0xacb54080561502b4';
   const [sales, setSales] = useState([]);
 
   useEffect(() => {

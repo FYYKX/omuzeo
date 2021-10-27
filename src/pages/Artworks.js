@@ -144,7 +144,7 @@ const Artworks = () => {
   };
 
   function NFTList() {
-    if (nfts.OmuzeoItems || nfts.OmuzeoNFT) {
+    if (nfts.OmuzeoItems.length > 0 || nfts.OmuzeoNFT.length > 0) {
       return (
         <Grid container>
           {nfts.OmuzeoItems.map((id) => (
