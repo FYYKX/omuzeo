@@ -35,12 +35,14 @@ function a11yProps(index) {
 }
 
 const Artworks = () => {
-  const { user } = useContext(AuthContext);
+  const { user, isUserDataEmpty } = useContext(AuthContext);
 
   const [value, setValue] = React.useState(0);
   const [ids, setIDs] = useState([]);
 
   useEffect(() => {
+    if(isUserDataEmpty) return
+
     try {
       fcl
         .send([

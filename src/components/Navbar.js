@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Navbar = () => {
-  const { user, hasCollection, activateCollection, logIn, logOut } = useContext(AuthContext);
+  const { user, hasCollection, activateCollection, logIn, logOut, isUserDataEmpty } = useContext(AuthContext);
   const classes = useStyles();
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -44,6 +44,8 @@ const Navbar = () => {
   const openUser = Boolean(anchorEl);
 
   useEffect(() => {
+    if(isUserDataEmpty) return
+
     try {
       fcl
         .send([
@@ -127,11 +129,9 @@ const Navbar = () => {
         {user.addr}
       </MenuItem>
       {user?.loggedIn && !hasCollection && (
-        <>
-          <MenuItem>{balance === null ? 'loading...' : `${balance} FLOW`}</MenuItem>
-          <MenuItem onClick={activateCollection}>Activate Collection</MenuItem>
-        </>
+        <MenuItem onClick={activateCollection}>Activate Collection</MenuItem>
       )}
+      <MenuItem>{balance === null ? 'loading...' : `${balance} FLOW`}</MenuItem>
       <Divider />
       <MenuItem onClick={logOut}>
         <ListItemIcon>

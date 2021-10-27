@@ -13,8 +13,10 @@ const AuthContextProvider = (props) => {
   useEffect(() => {
     fcl.currentUser().subscribe(async (user) => {
       console.log(user);
-      if (user.loggedIn) localStorage.setItem('OMUZEO_IS_LOGGED_IN', 'true');
-      else localStorage.setItem('OMUZEO_IS_LOGGED_IN', 'false');
+      if (user.loggedIn) {
+        localStorage.setItem('OMUZEO_IS_LOGGED_IN', 'true');
+        await checkCollection(user);
+      } else localStorage.setItem('OMUZEO_IS_LOGGED_IN', 'false');
 
       setUser({ ...user });
     });
@@ -30,7 +32,9 @@ const AuthContextProvider = (props) => {
 
   const getLoggedInStateFromLocalStorage = () => JSON.parse(localStorage.getItem('OMUZEO_IS_LOGGED_IN'));
 
-  const checkCollection = async () => {
+  const isUserDataEmpty = JSON.stringify(user) === '{}';
+
+  const checkCollection = async (user) => {
     try {
       fcl
         .send([
@@ -96,6 +100,7 @@ const AuthContextProvider = (props) => {
     <AuthContext.Provider
       value={{
         user,
+        isUserDataEmpty,
         hasCollection,
         logIn,
         logOut,
