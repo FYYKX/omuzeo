@@ -45,7 +45,7 @@ function Tickets() {
     <Container>
       <Grid container spacing={4}>
         {nft.tickets.map((t) => (
-          <Grid item xs="auto" key={t}>
+          <Grid item key={t}>
             <Card>
               <CardHeader title={nft.id} />
               <CardContent>

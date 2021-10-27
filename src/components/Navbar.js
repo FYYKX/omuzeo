@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Navbar = () => {
-  const { user, hasCollection, activateCollection, logIn, logOut, isUserDataEmpty } = useContext(AuthContext);
+  const { user, hasCollection, activateCollection, logIn, logOut } = useContext(AuthContext);
   const classes = useStyles();
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -44,31 +44,32 @@ const Navbar = () => {
   const openUser = Boolean(anchorEl);
 
   useEffect(() => {
-    if(isUserDataEmpty) return
-
-    try {
-      if (user.addr) {
+    async function fetchData(address) {
+      try {
         fcl
           .send([
             fcl.script(`
-              import FungibleToken from 0xFungibleToken
-              import FlowToken from 0xFlowToken
+                  import FungibleToken from 0xFungibleToken
+                  import FlowToken from 0xFlowToken
 
-              pub fun main(address: Address): UFix64 {
-                let vaultRef = getAccount(address).getCapability(/public/flowTokenBalance).borrow<&FlowToken.Vault{FungibleToken.Balance}>()
-                  ?? panic("Could not borrow Balance reference to the Vault");
-                return vaultRef.balance;
-              }
-            `),
-            fcl.args([fcl.arg(user.addr, t.Address)]),
+                  pub fun main(address: Address): UFix64 {
+                    let vaultRef = getAccount(address).getCapability(/public/flowTokenBalance).borrow<&FlowToken.Vault{FungibleToken.Balance}>()
+                      ?? panic("Could not borrow Balance reference to the Vault");
+                    return vaultRef.balance;
+                  }
+                `),
+            fcl.args([fcl.arg(address, t.Address)]),
           ])
           .then(fcl.decode)
           .then(setBalance);
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
     }
-  }, [user]);
+    if (user.addr) {
+      fetchData(user.addr);
+    }
+  }, [user.addr]);
 
   const handleClickUser = (event) => {
     setAnchorEl(event.currentTarget);

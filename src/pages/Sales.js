@@ -31,6 +31,9 @@ function Sales() {
     }
   }, []);
 
+  if (!sales.length) {
+    return <div>No Sales</div>;
+  }
   return (
     <Container>
       <Grid container spacing={4}>

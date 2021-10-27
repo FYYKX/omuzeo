@@ -1,4 +1,4 @@
-import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import axios from 'axios';
@@ -35,34 +35,43 @@ function a11yProps(index) {
 }
 
 const Artworks = () => {
-  const { user, isUserDataEmpty } = useContext(AuthContext);
-
+  const { user } = useContext(AuthContext);
   const [value, setValue] = React.useState(0);
-  const [ids, setIDs] = useState([]);
+  const [nfts, setNFTs] = useState({});
 
   useEffect(() => {
-    if(isUserDataEmpty) return
+    async function fetchData(address) {
+      try {
+        fcl
+          .send([
+            fcl.script(`
+              import NonFungibleToken from 0xNonFungibleToken
+              import OmuzeoItems from 0xOmuzeoItems
+              import OmuzeoNFT from 0xOmuzeoNFT
 
-    try {
-      fcl
-        .send([
-          fcl.script(`
-        import NonFungibleToken from 0xNonFungibleToken
-        import OmuzeoItems from 0xOmuzeoItems
+              pub fun main(address: Address): {String: [UInt64]} {
+                let account = getAccount(address)
+                let omuzeoItemsCollectionRef = account.getCapability(OmuzeoItems.CollectionPublicPath)!.borrow<&{NonFungibleToken.CollectionPublic}>()
+                  ?? panic("Could not borrow OmuzeoItems capability from public collection")
 
-        pub fun main(address: Address): [UInt64] {
-          let account = getAccount(address)
-          let collectionRef = account.getCapability(OmuzeoItems.CollectionPublicPath)!.borrow<&{NonFungibleToken.CollectionPublic}>()
-            ?? panic("Could not borrow capability from public collection")
-          return collectionRef.getIDs()
-        }`),
-          fcl.args([fcl.arg(user.addr, t.Address)]),
-        ])
-        .then(fcl.decode)
-        .then((id) => id.sort((a, b) => a - b))
-        .then(setIDs);
-    } catch (error) {
-      console.log(error);
+                let omuzeoNFTcollectionRef = account.getCapability(OmuzeoNFT.CollectionPublicPath)!.borrow<&{NonFungibleToken.CollectionPublic}>()
+                  ?? panic("Could not borrow OmuzeoNFT capability from public collection")
+
+                let ret: {String: [UInt64]} = {}
+                ret["OmuzeoItems"] = omuzeoItemsCollectionRef.getIDs()
+                ret["OmuzeoNFT"] = omuzeoNFTcollectionRef.getIDs()
+                return ret
+              }`),
+            fcl.args([fcl.arg(address, t.Address)]),
+          ])
+          .then(fcl.decode)
+          .then(setNFTs);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    if (user.addr) {
+      fetchData(user.addr);
     }
   }, [user.addr]);
 
@@ -134,13 +143,34 @@ const Artworks = () => {
     return <QuiltedImageList />;
   };
 
+  function NFTList() {
+    if (nfts.OmuzeoItems || nfts.OmuzeoNFT) {
+      return (
+        <Grid container>
+          {nfts.OmuzeoItems.map((id) => (
+            <Grid item xs={4} key={id}>
+              <NFT address={user.addr} id={id} type="OmuzeoItems.NFT" />
+            </Grid>
+          ))}
+          {nfts.OmuzeoNFT.map((id) => (
+            <Grid item xs={4} key={id}>
+              <NFT address={user.addr} id={id} type="OmuzeoNFT.NFT" />
+            </Grid>
+          ))}
+        </Grid>
+      );
+    } else {
+      return <div>No NFTs</div>;
+    }
+  }
+
   return (
     <>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Create an artwork" {...a11yProps(0)} />
           <Tab label="Show artworks" {...a11yProps(1)} />
-          <Tab label="Show ids" {...a11yProps(2)} />
+          <Tab label="Show NFTs" {...a11yProps(2)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -150,9 +180,7 @@ const Artworks = () => {
         {showQuiltedImageList()}
       </TabPanel>
       <TabPanel value={value} index={2}>
-        {ids.map((id) => (
-          <NFT key={id} address={user.addr} id={id} />
-        ))}
+        <NFTList />
       </TabPanel>
     </>
   );

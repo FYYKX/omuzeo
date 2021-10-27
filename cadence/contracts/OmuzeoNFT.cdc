@@ -7,6 +7,7 @@ pub contract OmuzeoNFT: NonFungibleToken {
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, to: Address?)
     pub event Minted(id: UInt64)
+    pub event View(metadata: String)
 
     // Named Paths
     //
@@ -116,6 +117,12 @@ pub contract OmuzeoNFT: NonFungibleToken {
             } else {
                 return nil
             }
+        }
+
+        pub fun borrowMetadata(id: UInt64) {
+            let nft = self.borrowOmuzeoNFT(id: id)
+                ?? panic("can not get NFT")
+            emit View(metadata: nft.metadata)
         }
 
         pub fun borrowItem(id: UInt64): Item {
