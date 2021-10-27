@@ -1,3 +1,4 @@
+# @name mintOmuzeoItems
 POST http://localhost:3000/create HTTP/1.1
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
@@ -10,6 +11,10 @@ Content-Disposition: form-data; name="name"
 
 dog
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="contract"
+
+OmuzeoItems
+------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="image"; filename="1.jpg"
 Content-Type: image/jpeg
 
@@ -18,7 +23,8 @@ Content-Type: image/jpeg
 
 ###
 
-POST http://localhost:3000/createOmuzeoNFT HTTP/1.1
+# @name mintOmuzeoNFT
+POST http://localhost:3000/create HTTP/1.1
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -29,6 +35,10 @@ Content-Disposition: form-data; name="creator"
 Content-Disposition: form-data; name="name"
 
 dog
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="contract"
+
+OmuzeoNFT
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="image"; filename="5.jpg"
 Content-Type: image/jpeg

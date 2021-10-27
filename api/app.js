@@ -23,12 +23,12 @@ const client = new NFTStorage({ token: apiKey });
 const pk = process.env.OMUZEO_PK || '97874405d76faffbf102bedbd510b21c912db5bd41851159413a9b65b8ac28fe';
 const admin = process.env.OMUZEO_ADMIN || '0x8984ae801f05c39a';
 
-console.log('access node ', process.env.ACCESS_NODE)
-console.log('wallet discovery ', process.env.WALLET_DISCOVERY)
-console.log('omuzeo admin ', process.env.OMUZEO_ADMIN)
-console.log('omuzeo items contract ', process.env.OMUSEO_CONTRACT)
+console.log('access node ', process.env.ACCESS_NODE);
+console.log('wallet discovery ', process.env.WALLET_DISCOVERY);
+console.log('omuzeo admin ', process.env.OMUZEO_ADMIN);
+console.log('omuzeo items contract ', process.env.OMUSEO_CONTRACT);
 console.log('omuzeo pk (trimmed) ', process.env.OMUZEO_PK.substr(0, 4));
-console.log('omuzeo api key (trimmed) ', process.env.OMUZEO_API_KEY.substr(62, 4))
+console.log('omuzeo api key (trimmed) ', process.env.OMUZEO_API_KEY.substr(62, 4));
 console.log('omuzeo nonfungible token ', process.env.OMUZEO_NONFUNGIBLE_TOKEN);
 
 fcl
@@ -87,10 +87,9 @@ app.post('/create', upload.single('image'), async (req, res) => {
       }),
     });
     const authorization = authorizationFunction();
-    const txId = await fcl.send([
-      fcl.transaction`
-
-      import NonFungibleToken from 0xNonFungibleToken
+    let cdc;
+    if (req.body.contract == 'OmuzeoItems') {
+      cdc = `import NonFungibleToken from 0xNonFungibleToken
       import OmuzeoItems from 0xOmuzeoItems
 
       transaction(recipient: Address, metadata: String) {
@@ -111,35 +110,9 @@ app.post('/create', upload.single('image'), async (req, res) => {
 
           self.minter.mintNFT(recipient: receiver, metadata: metadata)
         }
-      }`,
-      fcl.args([fcl.arg(req.body.receiver, t.Address), fcl.arg(metadata.embed().image.href, t.String)]),
-      fcl.proposer(authorization),
-      fcl.authorizations([authorization]),
-      fcl.payer(authorization),
-      fcl.limit(1000),
-    ]);
-    const result = await fcl.tx(txId).onceSealed();
-    res.send(result);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(error);
-  }
-});
-
-app.post('/createOmuzeoNFT', upload.single('image'), async (req, res) => {
-  try {
-    // const metadata = await client.store({
-    //   name: req.body.name,
-    //   description: req.body.name,
-    //   image: new File([await fs.promises.readFile(req.file.path)], req.file.filename, {
-    //     type: req.file.mimetype,
-    //   }),
-    // });
-    // console.log(metadata);
-    const authorization = authorizationFunction();
-    const txId = await fcl.send([
-      fcl.transaction`
-      import NonFungibleToken from 0xNonFungibleToken
+      }`;
+    } else {
+      cdc = `import NonFungibleToken from 0xNonFungibleToken
       import OmuzeoNFT from 0xOmuzeoNFT
 
       transaction(creator: Address, metadata: String) {
@@ -158,12 +131,11 @@ app.post('/createOmuzeoNFT', upload.single('image'), async (req, res) => {
 
           self.admin.mintNFT(recipient: receiver, metadata: metadata, creator: creator)
         }
-      }`,
-      // fcl.args([fcl.arg(req.body.creator, t.Address), fcl.arg(metadata.embed().image.href, t.String)]),
-      fcl.args([
-        fcl.arg(req.body.creator, t.Address),
-        fcl.arg('https://images.unsplash.com/photo-1635138639693-746199e59716', t.String),
-      ]),
+      }`;
+    }
+    const txId = await fcl.send([
+      fcl.transaction(cdc),
+      fcl.args([fcl.arg(req.body.receiver, t.Address), fcl.arg(metadata.embed().image.href, t.String)]),
       fcl.proposer(authorization),
       fcl.authorizations([authorization]),
       fcl.payer(authorization),
