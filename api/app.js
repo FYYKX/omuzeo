@@ -12,20 +12,30 @@ const upload = multer({ dest: 'uploads/' });
 const app = express();
 const port = 3000;
 
+require('dotenv').config();
+
 const apiKey =
+  process.env.OMUZEO_API_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxQWFFQjBEZkNmMEJhNDM0ZDAyOGY3ODc1NTREMjQ1NmVGMTRGODEiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzNDM3ODM3MzIzNSwibmFtZSI6Im9tdXNlbyJ9.z32KODE2Z-DBcc1unmtCA6N04JnLWOu557pg7W1NUnc';
+
 const client = new NFTStorage({ token: apiKey });
 
-const pk = '97874405d76faffbf102bedbd510b21c912db5bd41851159413a9b65b8ac28fe';
-const admin = '0x149f6592e6bbd04f';
+const pk = process.env.OMUZEO_PK || '97874405d76faffbf102bedbd510b21c912db5bd41851159413a9b65b8ac28fe';
+const admin = process.env.OMUZEO_ADMIN || '0x149f6592e6bbd04f';
 
-require('dotenv').config();
+console.log('access node ', process.env.ACCESS_NODE)
+console.log('wallet discovery ', process.env.WALLET_DISCOVERY)
+console.log('omuzeo admin ', process.env.OMUZEO_ADMIN)
+console.log('omuzeo items contract ', process.env.OMUSEO_CONTRACT)
+console.log('omuzeo pk (trimmed) ', process.env.OMUZEO_PK.substr(0, 4));
+console.log('omuzeo api key (trimmed) ', process.env.OMUZEO_API_KEY.substr(62, 4))
+console.log('omuzeo nonfungible token ', process.env.OMUZEO_NONFUNGIBLE_TOKEN);
 
 fcl
   .config()
   .put('accessNode.api', process.env.ACCESS_NODE || 'https://access-testnet.onflow.org')
   .put('discovery.wallet', process.env.WALLET_DISCOVERY || 'https://fcl-discovery.onflow.org/testnet/authn')
-  .put('0xNonFungibleToken', '0x631e88ae7f1d7c20')
+  .put('0xNonFungibleToken', process.env.OMUZEO_NONFUNGIBLE_TOKEN || '0x631e88ae7f1d7c20')
   .put('0xOmuzeoItems', process.env.OMUSEO_CONTRACT || admin);
 
 function sign(privateKey, message) {
@@ -79,7 +89,7 @@ app.post('/create', upload.single('image'), async (req, res) => {
     var response = await fcl.send([
       fcl.transaction`
     	import NonFungibleToken from 0xNonFungibleToken
-    	import OmuzeoItems from "0xOmuzeoItem"s
+    	import OmuzeoItems from "0xOmuzeoItems"
 
     	transaction(recipient: Address, metadata: String) {
     		let minter: &OmuzeoItems.NFTMinter
@@ -98,6 +108,7 @@ app.post('/create', upload.single('image'), async (req, res) => {
     				?? panic("Could not get receiver reference to the NFT Collection")
 
     			self.minter.mintNFT(recipient: receiver, metadata: metadata)
+    			self.minter.mintNFT(recipient: receiver, metadata: metadata)
     		}
     	}`,
       fcl.args([fcl.arg(req.body.receiver, t.Address), fcl.arg(metadata.embed().image.href, t.String)]),
@@ -106,7 +117,7 @@ app.post('/create', upload.single('image'), async (req, res) => {
       fcl.payer(authorization),
       fcl.limit(9999),
     ]);
-    res.send(transaction);
+    res.send(response);
   } catch (error) {
     console.log(error);
     res.status(500).send(error);
