@@ -122,7 +122,11 @@ function OmuzeoNFT({ address, id }) {
             )
           }
         }`),
-        fcl.args([fcl.arg(Number(ticketID), t.UInt64), fcl.arg(price.toFixed(2), t.UFix64), fcl.arg(creator, t.Address)]),
+        fcl.args([
+          fcl.arg(Number(ticketID), t.UInt64),
+          fcl.arg(price.toFixed(2), t.UFix64),
+          fcl.arg(creator, t.Address),
+        ]),
         fcl.proposer(fcl.authz),
         fcl.payer(fcl.authz),
         fcl.authorizations([fcl.authz]),
@@ -229,17 +233,21 @@ function OmuzeoNFT({ address, id }) {
           <Typography>{metadata.creator}</Typography>
           <Typography>{metadata.type}</Typography>
         </CardContent>
-        <CardContent>
-          {metadata.tickets.map((id) => (
-            <Button variant="outlined" color="success" key={id} onClick={() => sellTicket(id, 10, metadata.creator)}>
-              Sell Ticket {id} with 10 Flows
-            </Button>
-          ))}
-        </CardContent>
+        {address !== metadata.creator && (
+          <CardContent>
+            {metadata.tickets.map((id) => (
+              <Button variant="outlined" color="success" key={id} onClick={() => sellTicket(id, 10, metadata.creator)}>
+                Sell Ticket {id} with 10 Flows
+              </Button>
+            ))}
+          </CardContent>
+        )}
         <CardActions>
-          <Button variant="contained" onClick={() => createTickets(5)}>
-            Create 5 Tickets
-          </Button>
+          {address !== metadata.creator && (
+            <Button variant="contained" onClick={() => createTickets(5)}>
+              Create 5 Tickets
+            </Button>
+          )}
           <Button variant="contained" onClick={() => sell(id, 11)}>
             Sell with 20 Flows
           </Button>
