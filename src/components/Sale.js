@@ -1,10 +1,10 @@
 import {
-  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   CardHeader,
+  Chip,
   CircularProgress,
   Grid,
   Typography,
@@ -12,17 +12,16 @@ import {
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
-import NFT from './NFT';
-import useTransactionProgress from "../hooks/useTransactionProgress";
+import useTransactionProgress from '../hooks/useTransactionProgress';
 
-function Sale({ address, id }) {
+function Sale({ address, id, currentUser }) {
   const [sale, setSale] = useState({ isLoading: true });
   const {
     setIsTransactionInProgress,
     getTransactionProgressComponent,
     setGenericTransactionMessageOnLoading,
     setGenericTransactionMessageOnFailure,
-    setGenericTransactionMessageOnSuccess
+    setGenericTransactionMessageOnSuccess,
   } = useTransactionProgress();
 
   useEffect(() => {
@@ -45,6 +44,10 @@ function Sale({ address, id }) {
           fcl.args([fcl.arg(address, t.Address), fcl.arg(Number(id), t.UInt64)]),
         ])
         .then(fcl.decode)
+        .then((result) => {
+          console.log(result);
+          return result;
+        })
         .then(setSale);
     } catch (error) {
       console.log(error);
@@ -52,8 +55,8 @@ function Sale({ address, id }) {
   }, [address, id]);
 
   async function buy() {
-    setGenericTransactionMessageOnLoading()
-    setIsTransactionInProgress(true)
+    setGenericTransactionMessageOnLoading();
+    setIsTransactionInProgress(true);
 
     let txId, cdc;
     try {
@@ -145,21 +148,21 @@ function Sale({ address, id }) {
       ]);
     } catch (error) {
       console.log(error);
-      setGenericTransactionMessageOnFailure()
-      setIsTransactionInProgress(false)
+      setGenericTransactionMessageOnFailure();
+      setIsTransactionInProgress(false);
       return;
     }
     fcl.tx(txId).subscribe((tx) => {
       if (tx.errorMessage) {
         console.log(tx);
-        setGenericTransactionMessageOnFailure()
-        setIsTransactionInProgress(false)
+        setGenericTransactionMessageOnFailure();
+        setIsTransactionInProgress(false);
         return;
       }
       if (fcl.tx.isSealed(tx)) {
         console.log('%cbuy success!', 'color: limegreen;');
-        setGenericTransactionMessageOnSuccess()
-        setIsTransactionInProgress(false)
+        setGenericTransactionMessageOnSuccess();
+        setIsTransactionInProgress(false);
       }
     });
   }
@@ -171,24 +174,29 @@ function Sale({ address, id }) {
     <Grid item>
       {getTransactionProgressComponent()}
       <Card>
-        <CardHeader title={id} />
+        <CardHeader title={`Sale ID: ${id}`} />
         <CardContent>
-          <NFT address={address} id={sale.nftID} type={sale.nftType} />
-          <Typography>{sale.storefrontID}</Typography>
-          <Typography>{sale.purchased}</Typography>
-          <Typography>{sale.nftType}</Typography>
-          <Typography>{sale.salePaymentVaultType}</Typography>
-          <Typography variant="h5">{sale.salePrice}</Typography>
+          <Typography sx={{ mb: 5 }}>
+            NFT ID: <Chip label={sale.nftID} color="primary" variant="outlined" />
+          </Typography>
+          <Typography sx={{ mb: 5 }}>
+            Price: <Chip label={sale.salePrice} color="primary" variant="outlined" />
+          </Typography>
+          <Typography sx={{ mb: 5 }}>Details:</Typography>
           {sale.saleCuts?.map((sc, index) => (
-            <Box sx={{ borderColor: 'primary.main' }} key={index}>
-              <Button variant="outlined">{sc.receiver.address}</Button>
-              <Button variant="outlined">{sc.amount}</Button>
-            </Box>
+            <Typography sx={{ mb: 5 }} key={index}>
+              <Chip label={sc.receiver.address} color="primary" variant="outlined" />
+              <Chip label={sc.amount} color="primary" variant="outlined" />
+            </Typography>
           ))}
         </CardContent>
-        <CardActions>
-          <Button onClick={buy}>Buy</Button>
-        </CardActions>
+        {address !== currentUser && (
+          <CardActions>
+            <Button variant="contained" size="large" onClick={buy}>
+              Buy
+            </Button>
+          </CardActions>
+        )}
       </Card>
     </Grid>
   );

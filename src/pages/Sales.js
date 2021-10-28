@@ -31,6 +31,7 @@ function Sales() {
             return {
               id: id,
               address: address,
+              currentUser: address
             };
           }),
         )
