@@ -3,7 +3,9 @@ import { Redirect, Route } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
 const PrivateRoute = ({ component: Component, scopes = [], ...rest }) => {
-  const { getLoggedInStateFromLocalStorage } = useContext(AuthContext);
+  const { user, getLoggedInStateFromLocalStorage } = useContext(AuthContext);
+
+  if(!user.loggedIn) return null
 
   return (
     <Route

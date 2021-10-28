@@ -37,10 +37,13 @@ const Home = () => {
   }, []);
 
   return (
+    <>
+      <Typography variant="h4">Items for sale</Typography>
+      <br />
       <Grid container>
+        <br />
         {sales.length ? (
           <>
-            <Typography variant="h4">Items you may like</Typography>
             {sales.map((id) => (
               <Sale key={id} address={address} id={id} />
             ))}
@@ -49,6 +52,7 @@ const Home = () => {
           <Typography variant="h4">No items for sale</Typography>
         )}
       </Grid>
+    </>
   );
 };
 

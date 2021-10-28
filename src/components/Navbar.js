@@ -155,15 +155,19 @@ const Navbar = () => {
             <Link to="/" className={classes.link}>
               Home
             </Link>
-            <Link to="/nfts" className={classes.link}>
-              NFTs
-            </Link>
-            <Link to="/marketplace" className={classes.link}>
-              Marketplace
-            </Link>
-            <Link to="/sales" className={classes.link}>
-              Sales
-            </Link>
+            {user.loggedIn ? (
+              <>
+                <Link to="/nfts" className={classes.link}>
+                  NFTs
+                </Link>
+                <Link to="/marketplace" className={classes.link}>
+                  Marketplace
+                </Link>
+                <Link to="/sales" className={classes.link}>
+                  Sales
+                </Link>
+              </>
+            ) : null}
           </div>
         </Typography>
 
