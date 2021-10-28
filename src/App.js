@@ -28,8 +28,6 @@ const App = () => {
               <Route exact path="/" component={Home} />
               <Route exact path="/sales" component={Sales} />
               <PrivateRoute exact path="/nfts" component={NFTs} />
-              <PrivateRoute exact path="/collections" component={Collections} />
-              <PrivateRoute exact path="/messages" component={Messages} />
               <PrivateRoute exact path="/marketplace" component={Marketplace} />
               <PrivateRoute exact path="/tickets" component={Tickets} />
             </Switch>
