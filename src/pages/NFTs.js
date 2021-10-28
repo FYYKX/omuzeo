@@ -7,6 +7,7 @@ import { AuthContext } from '../AuthContext';
 import NFT from '../components/NFT';
 import Button from '@mui/material/Button';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import useTransactionProgress from '../hooks/useTransactionProgress';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -39,6 +40,9 @@ const NFTs = () => {
   const { user } = useContext(AuthContext);
   const [value, setValue] = React.useState(0);
   const [nfts, setNFTs] = useState({});
+
+  const { setTransactionStateMessage, setIsTransactionInProgress, getTransactionProgressComponent } =
+    useTransactionProgress();
 
   useEffect(() => {
     async function fetchData(address) {
@@ -84,30 +88,27 @@ const NFTs = () => {
   const [nftArtTitle, setNftArtTitle] = useState(null);
   const [nftArtDescription, setNftArtDescription] = useState(null);
   const [nftArtImage, setNftArtImage] = useState(null);
-  const [uploadSuccessMsg, setUploadSuccessMsg] = useState(null);
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleTitleChange = (evt) => {
     setNftArtTitle(evt.target.value);
-    setUploadSuccessMsg(null);
+    setTransactionStateMessage(null);
   };
 
   const handleDescriptionChange = (evt) => {
     setNftArtDescription(evt.target.value);
-    setUploadSuccessMsg(null);
+    setTransactionStateMessage(null);
   };
 
   const handleUpload = (evt) => {
     setNftArtImage(evt.target.files[0]);
-    setUploadSuccessMsg(null);
+    setTransactionStateMessage(null);
   };
 
   const handleSubmitForm = (evt) => {
     evt.preventDefault();
 
-    setUploadSuccessMsg('Please wait while we upload your image');
-    setIsLoading(true);
+    setTransactionStateMessage('Please wait while we upload your image');
+    setIsTransactionInProgress(true);
 
     const data = new FormData();
     data.append('receiver', user.addr);
@@ -122,17 +123,17 @@ const NFTs = () => {
       })
       .then((response) => {
         if (response.status === 200) {
-          setUploadSuccessMsg(`You've successfully uploaded ${nftArtTitle}!`);
+          setTransactionStateMessage(`You've successfully uploaded ${nftArtTitle}!`);
         } else {
-          setUploadSuccessMsg('Something went wrong. Please try uploading again!');
+          setTransactionStateMessage('Something went wrong. Please try uploading again!');
         }
         console.log(response);
-        setIsLoading(false);
+        setIsTransactionInProgress(false);
       })
       .catch((error) => {
         console.error(error);
-        setUploadSuccessMsg('Something went wrong. Please try uploading again!');
-        setIsLoading(false);
+        setTransactionStateMessage('Something went wrong. Please try uploading again!');
+        setIsTransactionInProgress(false);
       });
   };
 
@@ -211,17 +212,18 @@ const NFTs = () => {
 
   return (
     <>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={isLoading}
-        transitionDuration={{ exit: 2000 }}
-      >
-        <Stack justifyContent="center" alignItems="center">
-          <CircularProgress color="inherit" />
-          <br />
-          <Typography variant="h4">{uploadSuccessMsg}</Typography>
-        </Stack>
-      </Backdrop>
+      {/*<Backdrop*/}
+      {/*  sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}*/}
+      {/*  open={isLoading}*/}
+      {/*  transitionDuration={{ exit: 2000 }}*/}
+      {/*>*/}
+      {/*  <Stack justifyContent="center" alignItems="center">*/}
+      {/*    <CircularProgress color="inherit" />*/}
+      {/*    <br />*/}
+      {/*    <Typography variant="h4">{uploadSuccessMsg}</Typography>*/}
+      {/*  </Stack>*/}
+      {/*</Backdrop>*/}
+      {getTransactionProgressComponent()}
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Create an NFT" {...a11yProps(0)} />
