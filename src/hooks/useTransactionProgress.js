@@ -21,9 +21,20 @@ export default function useTransactionProgress() {
     );
   };
 
+  const setGenericTransactionMessageOnFailure = () =>
+    setTransactionStateMessage('Something went wrong with the transaction. Try again perhaps?');
+
+  const setGenericTransactionMessageOnLoading = () =>
+    setTransactionStateMessage('Please wait. Sending data to the Flow blockchain...');
+
+  const setGenericTransactionMessageOnSuccess = () => setTransactionStateMessage('Success!');
+
   return {
     setIsTransactionInProgress,
     setTransactionStateMessage,
+    setGenericTransactionMessageOnFailure,
+    setGenericTransactionMessageOnLoading,
+    setGenericTransactionMessageOnSuccess,
     getTransactionProgressComponent,
   };
 }

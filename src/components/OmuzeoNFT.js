@@ -16,9 +16,18 @@ import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
 import LockedContent from '../assets/locked-item.png';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import useTransactionProgress from '../hooks/useTransactionProgress';
 
 function OmuzeoNFT({ address, id }) {
   const [metadata, setMetadata] = useState({ isLoading: true });
+  const {
+    setIsTransactionInProgress,
+    getTransactionProgressComponent,
+    setGenericTransactionMessageOnLoading,
+    setGenericTransactionMessageOnFailure,
+    setGenericTransactionMessageOnSuccess
+  } = useTransactionProgress();
+
   useEffect(() => {
     try {
       fcl
@@ -163,6 +172,9 @@ function OmuzeoNFT({ address, id }) {
   }
 
   async function sell(id, price) {
+    setGenericTransactionMessageOnLoading();
+    setIsTransactionInProgress(true);
+
     let txId;
     try {
       txId = await fcl.send([
@@ -217,16 +229,22 @@ function OmuzeoNFT({ address, id }) {
       ]);
     } catch (error) {
       console.log(error);
+      setGenericTransactionMessageOnFailure()
+      setIsTransactionInProgress(false);
       return;
     }
 
     fcl.tx(txId).subscribe((tx) => {
       if (tx.errorMessage) {
         console.log(tx);
+        setGenericTransactionMessageOnFailure()
+        setIsTransactionInProgress(false);
         return;
       }
       if (fcl.tx.isSealed(tx)) {
         console.log('%clisting ticket success!', 'color: limegreen;');
+        setGenericTransactionMessageOnSuccess()
+        setIsTransactionInProgress(false);
       }
     });
   }
@@ -242,6 +260,7 @@ function OmuzeoNFT({ address, id }) {
   const showImageAndInfo = () => {
     return (
       <>
+        {getTransactionProgressComponent()}
         <CardMedia component="img" image={LockedContent} alt="Locked content" />
         <CardContent>
           <div style={{ width: '100%' }}>
