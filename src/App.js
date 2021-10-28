@@ -5,7 +5,7 @@ import AuthContextProvider from './AuthContext';
 import BasicCollectionActivationAlert from './components/BasicCollectionActivationAlert';
 import Navbar from './components/Navbar';
 import './config';
-import Artworks from './pages/Artworks';
+import NFTs from './pages/NFTs';
 import Collections from './pages/Collections';
 import Home from './pages/Home';
 import Marketplace from './pages/Marketplace';
@@ -27,7 +27,7 @@ const App = () => {
             <Switch>
               <Route exact path="/" component={Home} />
               <Route exact path="/sales" component={Sales} />
-              <PrivateRoute exact path="/artworks" component={Artworks} />
+              <PrivateRoute exact path="/nfts" component={NFTs} />
               <PrivateRoute exact path="/collections" component={Collections} />
               <PrivateRoute exact path="/messages" component={Messages} />
               <PrivateRoute exact path="/marketplace" component={Marketplace} />

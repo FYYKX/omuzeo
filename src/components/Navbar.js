@@ -149,8 +149,8 @@ const Navbar = () => {
             <Link to="/" className={classes.link}>
               Home
             </Link>
-            <Link to="/artworks" className={classes.link}>
-              Artworks
+            <Link to="/nfts" className={classes.link}>
+              NFTs
             </Link>
             <Link to="/collections" className={classes.link}>
               Collections

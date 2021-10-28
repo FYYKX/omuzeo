@@ -12,6 +12,8 @@ import {
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
+import LockedContent from '../assets/locked-item.png';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 function NFT({ address, id, type }) {
   const [metadata, setMetadata] = useState({ isLoading: true });
@@ -116,8 +118,37 @@ function NFT({ address, id, type }) {
     );
   }
 
-  return (
-    <Card>
+  const showNftCard = () => (
+    <>
+      {metadata.metadata && <CardMedia component="img" image={metadata.metadata} alt={metadata.id} />}
+      <CardContent>
+        <div style={{ width: '100%' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Box style={{ marginBottom: '8px' }}>
+                <Typography style={{ color: 'grey' }}>{`${metadata.type} `}</Typography>
+                <Typography>@{metadata.owner || metadata.creator}</Typography>
+              </Box>
+              <Box style={{ marginBottom: '18px' }}>
+                <Typography style={{ color: 'grey', fontSize: '12px' }}>{`IDENTIFIER ${metadata.id}`}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="h4" display="inline">{`${(20).toFixed(2)}`}</Typography>
+                {'  '}
+                <Typography variant="caption" display="inline">
+                  FLOW
+                </Typography>
+              </Box>
+            </Box>
+            <Box>{/*TODO: What to place here?*/}</Box>
+          </Box>
+        </div>
+      </CardContent>
+    </>
+  );
+
+  const showNftCardDebugVersion = () => (
+    <>
       <CardHeader title={metadata.id} />
       {metadata.metadata && <CardMedia component="img" height="140" image={metadata.metadata} alt={metadata.id} />}
       <CardContent>
@@ -129,6 +160,13 @@ function NFT({ address, id, type }) {
           {metadata.type}
         </Button>
       </CardContent>
+    </>
+  );
+
+  return (
+    <Card sx={{ maxWidth: 270, padding: '10px' }}>
+      {showNftCard()}
+
       {metadata.type === 'owner' && (
         <CardActions>
           <Button onClick={view}>View</Button>
