@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
   link: {
     textDecoration: 'none',
     color: '#ff00ab',
-    fontFamily: 'Montserrat',
+    fontFamily: 'Poppins',
     fontWeight: '600',
     fontSize: '20px',
     marginRight: theme.spacing(20),

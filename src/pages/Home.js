@@ -1,49 +1,54 @@
-import { Search } from '@mui/icons-material';
-import { InputAdornment, TextField } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import React, { useState } from 'react';
-import QuiltedImageList from '../components/QuiltedImageList';
+import { Container, Grid, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import * as fcl from '@onflow/fcl';
+import * as t from '@onflow/types';
+import Sale from '../components/Sale';
+import { CREATOR_ADDRESS } from '../DemoConstants';
 
+/*
+Displays the NFTs for sale.
+For this hackathon, display only the creator and fan nft
+ */
 const Home = () => {
-  const [searchText, setSearchText] = useState('');
+  const address = CREATOR_ADDRESS;
+  const [sales, setSales] = useState([]);
 
-  const handleSearchTextChange = (evt) => {
-    setSearchText(evt.target.value);
-  };
+  useEffect(() => {
+    try {
+      fcl
+        .send([
+          fcl.script(`
+              import NFTStorefront from 0xNFTStorefront
 
-  const handleSearchTextEnter = (evt) => {
-    if (evt.keyCode === 13) {
-      // TODO: send api request to backend!
+              pub fun main(account: Address): [UInt64] {
+                let storefrontRef = getAccount(account).getCapability<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath).borrow()
+                  ?? panic("Could not borrow public storefront from address")
+
+                return storefrontRef.getListingIDs()
+              }
+            `),
+          fcl.args([fcl.arg(address, t.Address)]),
+        ])
+        .then(fcl.decode)
+        .then(setSales);
+    } catch (error) {
+      console.log(error);
     }
-  };
-
-  const handleSearchTextClick = (evt) => {
-    // TODO: send api request to backend!
-  };
+  }, []);
 
   return (
-    <>
-      <br />
-      <TextField
-        fullWidth
-        label="Search"
-        value={searchText}
-        onChange={handleSearchTextChange}
-        onKeyUp={handleSearchTextEnter}
-        onClick={handleSearchTextClick}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton>
-                <Search />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
-      <br />
-      <QuiltedImageList />
-    </>
+      <Grid container>
+        {sales.length ? (
+          <>
+            <Typography variant="h4">Items you may like</Typography>
+            {sales.map((id) => (
+              <Sale key={id} address={address} id={id} />
+            ))}
+          </>
+        ) : (
+          <Typography variant="h4">No items for sale</Typography>
+        )}
+      </Grid>
   );
 };
 

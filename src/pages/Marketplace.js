@@ -47,13 +47,11 @@ function Marketplace() {
     );
   }
   return (
-    <Container>
-      <Grid container spacing={2}>
-        {ids.map((id) => (
-          <OmuzeoNFT key={id} address={user.addr} id={id} />
-        ))}
-      </Grid>
-    </Container>
+    <Grid container spacing={15}>
+      {ids.map((id) => (
+        <OmuzeoNFT key={id} address={user.addr} id={id} />
+      ))}
+    </Grid>
   );
 }
 

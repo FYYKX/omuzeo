@@ -1,7 +1,21 @@
-import { Button, Card, CardActions, CardContent, CardHeader, CircularProgress, Grid, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  CircularProgress,
+  Grid,
+  Stack,
+  Typography,
+} from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
+import LockedContent from '../assets/locked-item.png';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 function OmuzeoNFT({ address, id }) {
   const [metadata, setMetadata] = useState({ isLoading: true });
@@ -225,14 +239,44 @@ function OmuzeoNFT({ address, id }) {
     return <></>;
   }
 
-  return (
-    <Grid item xs={6}>
-      <Card>
-        <CardHeader title={metadata.id} />
+  const showImageAndInfo = () => {
+    return (
+      <>
+        <CardMedia component="img" image={LockedContent} alt="Locked content" />
         <CardContent>
-          <Typography>{metadata.creator}</Typography>
-          <Typography>{metadata.type}</Typography>
+          <div style={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Box style={{ marginBottom: '8px' }}>
+                  <Typography style={{ color: 'grey' }}>{`${metadata.type} `}</Typography>
+                  <Typography>@{metadata.creator}</Typography>
+                </Box>
+                <Box style={{ marginBottom: '18px' }}>
+                  <Typography style={{ color: 'grey', fontSize: '12px' }}>{`IDENTIFIER ${metadata.id}`}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h4" display="inline">{`${(20).toFixed(2)}`}</Typography>
+                  {'  '}
+                  <Typography variant="caption" display="inline">
+                    FLOW
+                  </Typography>
+                </Box>
+              </Box>
+              <Box>
+                {/*TODO: Implement likes feature*/}
+                <FavoriteBorderIcon fontSize="small" style={{ color: 'grey' }} />
+              </Box>
+            </Box>
+          </div>
         </CardContent>
+      </>
+    );
+  };
+
+  return (
+    <Grid item xs={4}>
+      <Card sx={{ maxWidth: 270, padding: '10px' }}>
+        {showImageAndInfo()}
         {address !== metadata.creator && (
           <CardContent>
             {metadata.tickets.map((id) => (

@@ -18,11 +18,24 @@ const theme = createTheme({
   },
   spacing: 2,
   typography: {
-    fontFamily: 'Helvetica Neue',
+    fontFamily: 'Poppins',
     fontSize: 14,
+    fontWeight: 400,
     button: {
       textTransform: 'none',
     },
+    h4: {
+      fontSize: 20,
+      fontWeight: 600
+    },
+    h5: {
+      fontSize: 16,
+      fontWeight: 600
+    },
+    // body: {
+    //   color: 'green',
+    //   fontWeight: 300,
+    // }
   },
 });
 
