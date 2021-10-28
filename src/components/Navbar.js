@@ -13,6 +13,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import OmuzeoLogo from './omuzeo-logo-name.png';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const useStyles = makeStyles((theme) => ({
   navLinks: {
@@ -44,6 +45,10 @@ const Navbar = () => {
   const openUser = Boolean(anchorEl);
 
   useEffect(() => {
+    fetchBalance();
+  }, [user.addr]);
+
+  const fetchBalance = () => {
     async function fetchData(address) {
       try {
         fcl
@@ -66,10 +71,11 @@ const Navbar = () => {
         console.log(error);
       }
     }
+
     if (user.addr) {
       fetchData(user.addr);
     }
-  }, [user.addr]);
+  };
 
   const handleClickUser = (event) => {
     setAnchorEl(event.currentTarget);
@@ -161,6 +167,14 @@ const Navbar = () => {
           </div>
         </Typography>
 
+        {!user?.loggedIn ? null : (
+          <>
+            <IconButton onClick={() => fetchBalance()}>
+              <RefreshIcon color="primary" />
+            </IconButton>
+            <Typography color="primary" style={{ marginRight: '10px' }}>{`BAL ${balance} FLOW`}</Typography>
+          </>
+        )}
         {!user?.loggedIn ? showSignUpButton() : showUserIcon()}
         {showAccountDropdown()}
       </Toolbar>
