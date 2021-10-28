@@ -1,3 +1,4 @@
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import {
   Box,
   Button,
@@ -7,28 +8,38 @@ import {
   CardHeader,
   CardMedia,
   CircularProgress,
+  Modal,
+  TextField,
   Typography,
 } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
 import LockedContent from '../assets/locked-item.png';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import useTransactionProgress from '../hooks/useTransactionProgress';
 
 function NFT({ address, id, type }) {
-  const [metadata, setMetadata] = useState({ isLoading: true });
+  const [open, setOpen] = React.useState(false);
+  const [metadata, setMetadata] = useState({ price: 20, isLoading: true });
+  const {
+    setIsTransactionInProgress,
+    getTransactionProgressComponent,
+    setGenericTransactionMessageOnLoading,
+    setGenericTransactionMessageOnFailure,
+    setGenericTransactionMessageOnSuccess,
+  } = useTransactionProgress();
+
   useEffect(() => {
-    try {
-      let cdc;
-      if (type.endsWith('OmuzeoNFT.NFT')) {
-        cdc = `import NonFungibleToken from 0xNonFungibleToken
+    let cdc;
+    if (type.endsWith('OmuzeoNFT.NFT')) {
+      cdc = `import NonFungibleToken from 0xNonFungibleToken
         import OmuzeoNFT from 0xOmuzeoNFT
 
         pub fun main(address: Address, id: UInt64): OmuzeoNFT.Item {
           return OmuzeoNFT.fetch(address, itemID: id)
         }`;
-      } else {
-        cdc = `import NonFungibleToken from 0xNonFungibleToken
+    } else {
+      cdc = `import NonFungibleToken from 0xNonFungibleToken
           import OmuzeoItems from 0xOmuzeoItems
 
           pub struct Item {
@@ -49,15 +60,201 @@ function NFT({ address, id, type }) {
             let item = OmuzeoItems.fetch(address, itemID: id)!
             return Item(id: item.id, metadata: item.metadata, owner: address, type: "OmuzeoItems")
           }`;
-      }
-      fcl
-        .send([fcl.script(cdc), fcl.args([fcl.arg(address, t.Address), fcl.arg(Number(id), t.UInt64)])])
-        .then(fcl.decode)
-        .then(setMetadata);
+    }
+    fcl
+      .send([fcl.script(cdc), fcl.args([fcl.arg(address, t.Address), fcl.arg(Number(id), t.UInt64)])])
+      .then(fcl.decode)
+      .then((result) => {
+        console.log(result);
+        return result;
+      })
+      .then(setMetadata)
+      .catch(console.log);
+  }, [address, id, type]);
+
+  async function createTickets(total) {
+    setGenericTransactionMessageOnLoading();
+    setIsTransactionInProgress(true);
+    let txId;
+    try {
+      txId = await fcl.send([
+        fcl.transaction(`
+          import NonFungibleToken from 0xNonFungibleToken
+          import OmuzeoNFT from 0xOmuzeoNFT
+
+          transaction(id: UInt64, total: UInt64) {
+            let collectionRef: &OmuzeoNFT.Collection
+
+            prepare(acct: AuthAccount) {
+              self.collectionRef = acct.borrow<&OmuzeoNFT.Collection>(from: OmuzeoNFT.CollectionStoragePath)!
+            }
+
+            execute {
+              self.collectionRef.createTickets(id: id, total: total)
+              log("create tickets")
+            }
+          }
+        `),
+        fcl.args([fcl.arg(Number(id), t.UInt64), fcl.arg(Number(total), t.UInt64)]),
+        fcl.proposer(fcl.authz),
+        fcl.payer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.limit(1000),
+      ]);
     } catch (error) {
       console.log(error);
+      setGenericTransactionMessageOnFailure();
+      setIsTransactionInProgress(false);
+      return;
     }
-  }, [address, id, type]);
+
+    fcl.tx(txId).subscribe((tx) => {
+      if (tx.errorMessage) {
+        console.log(tx);
+        setGenericTransactionMessageOnFailure();
+        setIsTransactionInProgress(false);
+        return;
+      }
+      if (fcl.tx.isSealed(tx)) {
+        console.log('%ccreate ticket success!', 'color: limegreen;');
+        setGenericTransactionMessageOnSuccess();
+        setIsTransactionInProgress(false);
+      }
+    });
+  }
+
+  async function sell() {
+    setGenericTransactionMessageOnLoading();
+    setIsTransactionInProgress(true);
+    setOpen(false);
+    const { id, price, creator } = metadata;
+    let txId, cdc, args;
+    try {
+      if (creator) {
+        cdc = `import FungibleToken from 0xFungibleToken
+        import NonFungibleToken from 0xNonFungibleToken
+        import FlowToken from 0xFlowToken
+        import OmuzeoNFT from 0xOmuzeoNFT
+        import NFTStorefront from 0xNFTStorefront
+
+        transaction(saleItemID: UInt64, saleItemPrice: UFix64, creator: Address) {
+          let owner: Capability<&FlowToken.Vault{FungibleToken.Receiver}>
+          let creator: Capability<&FlowToken.Vault{FungibleToken.Receiver}>
+          let omuzeoNFTProvider: Capability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>
+          let storefront: &NFTStorefront.Storefront
+
+          prepare(acct: AuthAccount) {
+            let omuzeoNFTCollectionProviderPrivatePath = /private/OmuzeoNFTCollectionProviderForNFTStorefront
+
+            self.owner = acct.getCapability<&FlowToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)!
+            assert(self.owner.borrow() != nil, message: "Missing or mis-typed FlowToken receiver")
+
+            self.creator = getAccount(creator).getCapability<&FlowToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)!
+            assert(self.creator.borrow() != nil, message: "Missing or mis-typed FlowToken receiver")
+
+            if !acct.getCapability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath)!.check() {
+              acct.link<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath, target: OmuzeoNFT.CollectionStoragePath)
+            }
+
+            self.omuzeoNFTProvider = acct.getCapability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath)!
+            assert(self.omuzeoNFTProvider.borrow() != nil, message: "Missing or mis-typed OmuzeoNFT.Collection provider")
+
+            self.storefront = acct.borrow<&NFTStorefront.Storefront>(from: NFTStorefront.StorefrontStoragePath)
+              ?? panic("Missing or mis-typed NFTStorefront Storefront")
+          }
+
+          execute {
+            let ownerSaleCut = NFTStorefront.SaleCut(
+              receiver: self.owner,
+              amount: saleItemPrice * 0.7
+            )
+            let creatorSaleCut = NFTStorefront.SaleCut(
+              receiver: self.creator,
+              amount: saleItemPrice * 0.3
+            )
+            self.storefront.createListing(
+              nftProviderCapability: self.omuzeoNFTProvider,
+              nftType: Type<@OmuzeoNFT.NFT>(),
+              nftID: saleItemID,
+              salePaymentVaultType: Type<@FlowToken.Vault>(),
+              saleCuts: [ownerSaleCut, creatorSaleCut]
+            )
+          }
+        }`;
+        args = [fcl.arg(Number(id), t.UInt64), fcl.arg(price.toFixed(2), t.UFix64), fcl.arg(creator, t.Address)];
+      } else {
+        cdc = `import FungibleToken from 0xFungibleToken
+        import NonFungibleToken from 0xNonFungibleToken
+        import FlowToken from 0xFlowToken
+        import OmuzeoNFT from 0xOmuzeoNFT
+        import NFTStorefront from 0xNFTStorefront
+
+        transaction(saleItemID: UInt64, saleItemPrice: UFix64) {
+          let flowReceiver: Capability<&FlowToken.Vault{FungibleToken.Receiver}>
+          let omuzeoNFTProvider: Capability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>
+          let storefront: &NFTStorefront.Storefront
+
+          prepare(acct: AuthAccount) {
+            let omuzeoNFTCollectionProviderPrivatePath = /private/OmuzeoNFTCollectionProviderForNFTStorefront
+
+            self.flowReceiver = acct.getCapability<&FlowToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)!
+            assert(self.flowReceiver.borrow() != nil, message: "Missing or mis-typed FlowToken receiver")
+
+            if !acct.getCapability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath)!.check() {
+              acct.link<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath, target: OmuzeoNFT.CollectionStoragePath)
+            }
+
+            self.omuzeoNFTProvider = acct.getCapability<&OmuzeoNFT.Collection{NonFungibleToken.Provider, NonFungibleToken.CollectionPublic}>(omuzeoNFTCollectionProviderPrivatePath)!
+            assert(self.omuzeoNFTProvider.borrow() != nil, message: "Missing or mis-typed OmuzeoNFT.Collection provider")
+
+            self.storefront = acct.borrow<&NFTStorefront.Storefront>(from: NFTStorefront.StorefrontStoragePath)
+              ?? panic("Missing or mis-typed NFTStorefront Storefront")
+          }
+
+          execute {
+            let saleCut = NFTStorefront.SaleCut(
+              receiver: self.flowReceiver,
+              amount: saleItemPrice
+            )
+            self.storefront.createListing(
+              nftProviderCapability: self.omuzeoNFTProvider,
+              nftType: Type<@OmuzeoNFT.NFT>(),
+              nftID: saleItemID,
+              salePaymentVaultType: Type<@FlowToken.Vault>(),
+              saleCuts: [saleCut]
+            )
+          }
+        }`;
+      }
+      txId = await fcl.send([
+        fcl.transaction(cdc),
+        fcl.args(args),
+        fcl.proposer(fcl.authz),
+        fcl.payer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.limit(1000),
+      ]);
+    } catch (error) {
+      console.log(error);
+      setGenericTransactionMessageOnFailure();
+      setIsTransactionInProgress(false);
+      return;
+    }
+
+    fcl.tx(txId).subscribe((tx) => {
+      if (tx.errorMessage) {
+        console.log(tx);
+        setGenericTransactionMessageOnFailure();
+        setIsTransactionInProgress(false);
+        return;
+      }
+      if (fcl.tx.isSealed(tx)) {
+        console.log('%clisting ticket success!', 'color: limegreen;');
+        setGenericTransactionMessageOnSuccess();
+        setIsTransactionInProgress(false);
+      }
+    });
+  }
 
   async function view() {
     setMetadata({
@@ -111,11 +308,7 @@ function NFT({ address, id, type }) {
   }
 
   if (metadata.isLoading) {
-    return (
-      <Box sx={{ display: 'flex' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <CircularProgress />;
   }
 
   const showNftCard = () => (
@@ -163,16 +356,90 @@ function NFT({ address, id, type }) {
     </>
   );
 
-  return (
-    <Card sx={{ maxWidth: 270, padding: '10px' }}>
-      {showNftCard()}
+  const showImageAndInfo = () => {
+    return (
+      <>
+        <CardMedia component="img" image={LockedContent} alt="Locked content" />
+        <CardContent>
+          <div style={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Box style={{ marginBottom: '8px' }}>
+                  <Typography style={{ color: 'grey' }}>{`${metadata.type} `}</Typography>
+                  <Typography>@{metadata.creator}</Typography>
+                </Box>
+                <Box style={{ marginBottom: '18px' }}>
+                  <Typography style={{ color: 'grey', fontSize: '12px' }}>{`IDENTIFIER ${metadata.id}`}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h4" display="inline">{`${(20).toFixed(2)}`}</Typography>
+                  {'  '}
+                  <Typography variant="caption" display="inline">
+                    FLOW
+                  </Typography>
+                </Box>
+              </Box>
+              <Box>
+                {/*TODO: Implement likes feature*/}
+                <FavoriteBorderIcon fontSize="small" style={{ color: 'grey' }} />
+              </Box>
+            </Box>
+          </div>
+        </CardContent>
+      </>
+    );
+  };
 
-      {metadata.type === 'owner' && (
+  if (metadata.isLoading) {
+    return <CircularProgress />;
+  }
+
+  const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
+  return (
+    <>
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <Box sx={style}>
+          <TextField
+            label="Price"
+            variant="outlined"
+            value={metadata.price}
+            sx={{ m: 10 }}
+            type="number"
+            onChange={(e) => setMetadata({ ...metadata, price: Number(e.target.value) })}
+          />
+          <br />
+          <Button variant="contained" onClick={sell}>
+            Sell
+          </Button>
+        </Box>
+      </Modal>
+      {getTransactionProgressComponent()}
+      <Card sx={{ maxWidth: 270, padding: '10px' }}>
+        {showNftCard()}
         <CardActions>
-          <Button onClick={view}>View</Button>
+          {address !== metadata.creator && (
+            <Button variant="contained" onClick={() => createTickets(5)}>
+              Create 5 Tickets
+            </Button>
+          )}
+          {metadata.type === 'owner' && <Button onClick={view}>View</Button>}
+          <Button variant="contained" onClick={() => setOpen(true)}>
+            Sell
+          </Button>
         </CardActions>
-      )}
-    </Card>
+      </Card>
+    </>
   );
 }
 

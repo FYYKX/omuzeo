@@ -10,7 +10,7 @@ const EC = require('elliptic').ec;
 const ec = new EC('p256');
 const upload = multer({ dest: 'uploads/' });
 const app = express();
-const port = 3000;
+const port = 3001;
 
 require('dotenv').config();
 
@@ -20,16 +20,8 @@ const apiKey =
 
 const client = new NFTStorage({ token: apiKey });
 
-const pk = process.env.OMUZEO_PK || '97874405d76faffbf102bedbd510b21c912db5bd41851159413a9b65b8ac28fe';
+const pk = process.env.OMUZEO_PK || 'aaf786845222b661d397fc4a9a188ca2adeb7b6c723637da281757552e878f5b';
 const admin = process.env.OMUZEO_ADMIN || '0x8984ae801f05c39a';
-
-console.log('access node ', process.env.ACCESS_NODE);
-console.log('wallet discovery ', process.env.WALLET_DISCOVERY);
-console.log('omuzeo admin ', process.env.OMUZEO_ADMIN);
-console.log('omuzeo items contract ', process.env.OMUSEO_CONTRACT);
-console.log('omuzeo pk (trimmed) ', process.env.OMUZEO_PK.substr(0, 4));
-console.log('omuzeo api key (trimmed) ', process.env.OMUZEO_API_KEY.substr(62, 4));
-console.log('omuzeo nonfungible token ', process.env.OMUZEO_NONFUNGIBLE_TOKEN);
 
 fcl
   .config()
@@ -72,7 +64,7 @@ const authorizationFunction = () => {
   };
 };
 
-getAccount = async (addr) => {
+const getAccount = async (addr) => {
   const { account } = await fcl.send([fcl.getAccount(addr)]);
   return account;
 };
@@ -88,7 +80,7 @@ app.post('/create', upload.single('image'), async (req, res) => {
     });
     const authorization = authorizationFunction();
     let cdc;
-    if (req.body.contract == 'OmuzeoItems') {
+    if (req.body.contract === 'OmuzeoItems') {
       cdc = `import NonFungibleToken from 0xNonFungibleToken
       import OmuzeoItems from 0xOmuzeoItems
 

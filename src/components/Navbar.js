@@ -1,5 +1,6 @@
 import { Logout } from '@mui/icons-material';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
@@ -10,10 +11,9 @@ import { makeStyles } from '@mui/styles';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useContext, useEffect, useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import OmuzeoLogo from './omuzeo-logo-name.png';
-import RefreshIcon from '@mui/icons-material/Refresh';
 
 const useStyles = makeStyles((theme) => ({
   navLinks: {
@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const activeStyle = { color: 'black' }
+const activeStyle = { color: 'black' };
 
 const Navbar = () => {
   const { user, hasCollection, activateCollection, logIn, logOut } = useContext(AuthContext);
@@ -157,19 +157,19 @@ const Navbar = () => {
             <NavLink to="/" exact={true} className={classes.link} activeStyle={activeStyle}>
               Home
             </NavLink>
-            {user.loggedIn ? (
+            {user.loggedIn && (
               <>
-                <NavLink to="/nfts" className={classes.link} activeStyle={activeStyle}>
-                  NFTs
+                <NavLink to="/create" className={classes.link} activeStyle={activeStyle}>
+                  Create NFT
                 </NavLink>
-                <NavLink to="/marketplace" className={classes.link} activeStyle={activeStyle}>
-                  Marketplace
+                <NavLink to="/nfts" className={classes.link} activeStyle={activeStyle}>
+                  View NFT
                 </NavLink>
                 <NavLink to="/sales" className={classes.link} activeStyle={activeStyle}>
-                  Sales
+                  For Sales
                 </NavLink>
               </>
-            ) : null}
+            )}
           </div>
         </Typography>
 

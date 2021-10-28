@@ -1,39 +1,43 @@
-import { Container, Grid, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { Grid, Typography } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
+import React, { useEffect, useState } from 'react';
 import Sale from '../components/Sale';
-import { CREATOR_ADDRESS } from '../DemoConstants';
 
-/*
-Displays the NFTs for sale.
-For this hackathon, display only the creator and fan nft
- */
-const Home = () => {
-  const address = CREATOR_ADDRESS;
+function Home() {
   const [sales, setSales] = useState([]);
 
   useEffect(() => {
-    try {
-      fcl
+    async function fetchData(address) {
+      return fcl
         .send([
           fcl.script(`
-              import NFTStorefront from 0xNFTStorefront
+            import NFTStorefront from 0xNFTStorefront
 
-              pub fun main(account: Address): [UInt64] {
-                let storefrontRef = getAccount(account).getCapability<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath).borrow()
-                  ?? panic("Could not borrow public storefront from address")
+            pub fun main(account: Address): [UInt64] {
+              let storefrontRef = getAccount(account).getCapability<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath).borrow()
+                ?? panic("Could not borrow public storefront from address")
 
-                return storefrontRef.getListingIDs()
-              }
-            `),
+              return storefrontRef.getListingIDs()
+            }
+          `),
           fcl.args([fcl.arg(address, t.Address)]),
         ])
         .then(fcl.decode)
-        .then(setSales);
-    } catch (error) {
-      console.log(error);
+        .then((ids) =>
+          ids.map((id) => {
+            return {
+              id: id,
+              address: address,
+            };
+          }),
+        )
+        .catch(console.log);
     }
+    Promise.all(['0xdedfcdfa108f79fc', '0x2dcfbf9769cd6fd6'].map(fetchData))
+      .then((s) => s.flat())
+      .then(setSales)
+      .catch(console.log);
   }, []);
 
   return (
@@ -44,8 +48,8 @@ const Home = () => {
         <br />
         {sales.length ? (
           <>
-            {sales.map((id) => (
-              <Sale key={id} address={address} id={id} />
+            {sales.map((sale, index) => (
+              <Sale key={index} {...sale} />
             ))}
           </>
         ) : (
@@ -54,6 +58,6 @@ const Home = () => {
       </Grid>
     </>
   );
-};
+}
 
 export default Home;
