@@ -14,16 +14,16 @@ import Sales from './pages/Sales';
 import Tickets from './pages/Tickets';
 import PrivateRoute from './PrivateRoute';
 import theme from './ThemeContext';
-import {Container} from "@mui/material";
+import { Container } from '@mui/material';
 
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <AuthContextProvider>
-        <Router>
+      <Router>
+        <AuthContextProvider>
           <BasicCollectionActivationAlert />
           <Navbar />
-          <Container style={{ padding: '40px'}}>
+          <Container style={{ padding: '40px' }}>
             <Switch>
               <Route exact path="/" component={Home} />
               <Route exact path="/sales" component={Sales} />
@@ -32,8 +32,8 @@ const App = () => {
               <PrivateRoute exact path="/tickets" component={Tickets} />
             </Switch>
           </Container>
-        </Router>
-      </AuthContextProvider>
+        </AuthContextProvider>
+      </Router>
     </ThemeProvider>
   );
 };

@@ -1,14 +1,14 @@
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import { createContext, useEffect, useState } from 'react';
-
-// import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 
 export const AuthContext = createContext();
 
 const AuthContextProvider = (props) => {
   const [user, setUser] = useState({});
   const [hasCollection, setHasCollection] = useState(false);
+  let history = useHistory();
 
   useEffect(() => {
     fcl.currentUser().subscribe(async (user) => {
@@ -28,6 +28,7 @@ const AuthContextProvider = (props) => {
 
   const logOut = async () => {
     await fcl.unauthenticate();
+    history.push('/')
   };
 
   const getLoggedInStateFromLocalStorage = () => JSON.parse(localStorage.getItem('OMUZEO_IS_LOGGED_IN'));
