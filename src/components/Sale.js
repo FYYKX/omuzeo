@@ -13,9 +13,18 @@ import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
 import NFT from './NFT';
+import useTransactionProgress from "../hooks/useTransactionProgress";
 
 function Sale({ address, id }) {
   const [sale, setSale] = useState({ isLoading: true });
+  const {
+    setIsTransactionInProgress,
+    getTransactionProgressComponent,
+    setGenericTransactionMessageOnLoading,
+    setGenericTransactionMessageOnFailure,
+    setGenericTransactionMessageOnSuccess
+  } = useTransactionProgress();
+
   useEffect(() => {
     try {
       fcl
@@ -43,6 +52,9 @@ function Sale({ address, id }) {
   }, [address, id]);
 
   async function buy() {
+    setGenericTransactionMessageOnLoading()
+    setIsTransactionInProgress(true)
+
     let txId, cdc;
     try {
       if (sale.nftType.endsWith('OmuzeoItems.NFT')) {
@@ -133,15 +145,21 @@ function Sale({ address, id }) {
       ]);
     } catch (error) {
       console.log(error);
+      setGenericTransactionMessageOnFailure()
+      setIsTransactionInProgress(false)
       return;
     }
     fcl.tx(txId).subscribe((tx) => {
       if (tx.errorMessage) {
         console.log(tx);
+        setGenericTransactionMessageOnFailure()
+        setIsTransactionInProgress(false)
         return;
       }
       if (fcl.tx.isSealed(tx)) {
         console.log('%cbuy success!', 'color: limegreen;');
+        setGenericTransactionMessageOnSuccess()
+        setIsTransactionInProgress(false)
       }
     });
   }
@@ -151,6 +169,7 @@ function Sale({ address, id }) {
   }
   return (
     <Grid item>
+      {getTransactionProgressComponent()}
       <Card>
         <CardHeader title={id} />
         <CardContent>
