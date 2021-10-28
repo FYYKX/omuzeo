@@ -10,10 +10,10 @@ import { makeStyles } from '@mui/styles';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useContext, useEffect, useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import OmuzeoLogo from '../assets/omuzeo-name.png';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import OmuzeoLogo from '../assets/omuzeo-name.png';
 
 const useStyles = makeStyles((theme) => ({
   navLinks: {
@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const activeStyle = { color: 'black' }
+const activeStyle = { color: 'black' };
 
 const Navbar = () => {
   const { user, hasCollection, activateCollection, logIn, logOut } = useContext(AuthContext);
@@ -157,19 +157,19 @@ const Navbar = () => {
             <NavLink to="/" exact={true} className={classes.link} activeStyle={activeStyle}>
               Home
             </NavLink>
-            {user.loggedIn ? (
+            {user.loggedIn && (
               <>
-                <NavLink to="/nfts" className={classes.link} activeStyle={activeStyle}>
-                  NFTs
+                <NavLink to="/create" className={classes.link} activeStyle={activeStyle}>
+                  Create NFT
                 </NavLink>
-                <NavLink to="/marketplace" className={classes.link} activeStyle={activeStyle}>
-                  Marketplace
+                <NavLink to="/nfts" className={classes.link} activeStyle={activeStyle}>
+                  View NFT
                 </NavLink>
                 <NavLink to="/sales" className={classes.link} activeStyle={activeStyle}>
-                  Sales
+                  For Sales
                 </NavLink>
               </>
-            ) : null}
+            )}
           </div>
         </Typography>
 

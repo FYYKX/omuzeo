@@ -19,36 +19,40 @@ First, make sure you install [Flow CLI](https://docs.onflow.org/flow-cli/install
 5. Try minting, adopting (transfer from marketplace to you), and releasing (transferring back to the marketplace) pet NFTs.
 
 ### Features
+
 - [ ] **Authentication**
-    - [x] Local dev wallet (emulator)
-    - [ ] Flow-compatible wallets (testnet)
+  - [x] Local dev wallet (emulator)
+  - [ ] Flow-compatible wallets (testnet)
 - [x] **Non-fungible Token**
-    - [x] Account setup
-    - [x] Minting (pre-minting and user-minting)
-    - [x] Withdrawing and deposit
+  - [x] Account setup
+  - [x] Minting (pre-minting and user-minting)
+  - [x] Withdrawing and deposit
 - [ ] **Fungible Token**
-    - [ ] Account setup
-    - [ ] Minting
-    - [ ] Withdrawing and deposit
+  - [ ] Account setup
+  - [ ] Minting
+  - [ ] Withdrawing and deposit
 - [ ] Storage
-    - [x] Store images on NFT Storage
-    - [ ] Store all metadata on NFT Storage (testnet or mainnet)
+  - [x] Store images on NFT Storage
+  - [ ] Store all metadata on NFT Storage (testnet or mainnet)
 
 ### Interacting with CLI
 
-It can be helpful to directly interact with the contract(s) via the Flow CLI.  Try running the following in a separate terminal, while the emulator is running:
+It can be helpful to directly interact with the contract(s) via the Flow CLI. Try running the following in a separate terminal, while the emulator is running:
 
 #### GetAllTokenIds
+
 Get all the NFTs' IDs on the chain
 
 `flow scripts execute ./src/flow/scripts/pets/GetAllTokenIds.cdc`
 
 #### CheckTokenMetadata
+
 Get the NFT's metadata from its ID
 
 `flow scripts execute ./src/flow/scripts/pets/CheckTokenMetaData.cdc <id>`
 
 #### MintPetToken
+
 Mint a new NFT of your own. Check out [`pets.json`](./pets.json) to get the idea of the JSON string to pass as an argument. Don't forget to include the IPFS link in the `uri` field (or any link to an online image resource) for your NFT to show up.
 
 `flow transactions send ./src/flow/transactions/pets/MintPetToken.cdc <JSON-string-describing-a-pet>`
@@ -56,3 +60,8 @@ Mint a new NFT of your own. Check out [`pets.json`](./pets.json) to get the idea
 ## Copyrights
 
 Dual-licensed under MIT and Apache 2. Dog and cat photos from Unsplash.
+
+| Email                   | Password     | Address            |
+| ----------------------- | ------------ | ------------------ |
+| omuzeocreator@gmail.com | H%6LezCMvsU4 | 0xdedfcdfa108f79fc |
+| omuzeoowner@gmail.com   | oxXvh35$W@NY | 0x2dcfbf9769cd6fd6 |

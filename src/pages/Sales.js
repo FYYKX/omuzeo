@@ -1,35 +1,46 @@
 import { Container, Grid } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../AuthContext';
 import Sale from '../components/Sale';
 
 function Sales() {
-  const address = '0xacb54080561502b4';
+  const { user } = useContext(AuthContext);
   const [sales, setSales] = useState([]);
 
   useEffect(() => {
-    try {
+    async function fetchData(address) {
       fcl
         .send([
           fcl.script(`
-              import NFTStorefront from 0xNFTStorefront
+            import NFTStorefront from 0xNFTStorefront
 
-              pub fun main(account: Address): [UInt64] {
-                let storefrontRef = getAccount(account).getCapability<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath).borrow()
-                  ?? panic("Could not borrow public storefront from address")
+            pub fun main(account: Address): [UInt64] {
+              let storefrontRef = getAccount(account).getCapability<&NFTStorefront.Storefront{NFTStorefront.StorefrontPublic}>(NFTStorefront.StorefrontPublicPath).borrow()
+                ?? panic("Could not borrow public storefront from address")
 
-                return storefrontRef.getListingIDs()
-              }
-            `),
+              return storefrontRef.getListingIDs()
+            }
+          `),
           fcl.args([fcl.arg(address, t.Address)]),
         ])
         .then(fcl.decode)
-        .then(setSales);
-    } catch (error) {
-      console.log(error);
+        .then((ids) =>
+          ids.map((id) => {
+            return {
+              id: id,
+              address: address,
+            };
+          }),
+        )
+        .then(setSales)
+        .catch(console.log);
     }
-  }, []);
+    if (user.addr) {
+      fetchData(user.addr);
+    }
+  }, [user.addr]);
 
   if (!sales.length) {
     return <div>No Sales</div>;
@@ -37,8 +48,8 @@ function Sales() {
   return (
     <Container>
       <Grid container spacing={4}>
-        {sales.map((id) => (
-          <Sale key={id} address={address} id={id} />
+        {sales.map((sale, index) => (
+          <Sale key={index} {...sale} />
         ))}
       </Grid>
     </Container>
