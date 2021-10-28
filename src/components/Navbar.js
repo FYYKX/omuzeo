@@ -12,7 +12,7 @@ import * as t from '@onflow/types';
 import React, { useContext, useEffect, useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import OmuzeoLogo from './omuzeo-logo-name.png';
+import OmuzeoLogo from '../assets/omuzeo-name.png';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 const useStyles = makeStyles((theme) => ({
@@ -151,7 +151,7 @@ const Navbar = () => {
   return (
     <AppBar position="static">
       <Toolbar style={{ backgroundColor: 'white' }}>
-        <img src={OmuzeoLogo} alt="Omuzeo Logo" height={50} width="auto" style={{ marginRight: '20px' }} />
+        <img src={OmuzeoLogo} alt="Omuzeo Logo" height="auto" width="200" style={{ marginRight: '20px' }} />
         <Typography variant="h6" className={classes.title}>
           <div className={classes.navLinks}>
             <NavLink to="/" exact={true} className={classes.link} activeStyle={activeStyle}>
