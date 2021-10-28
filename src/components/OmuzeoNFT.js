@@ -49,6 +49,9 @@ function OmuzeoNFT({ address, id }) {
   }, [address, id]);
 
   async function createTickets(total) {
+    setGenericTransactionMessageOnLoading();
+    setIsTransactionInProgress(true);
+
     let txId;
     try {
       txId = await fcl.send([
@@ -76,21 +79,31 @@ function OmuzeoNFT({ address, id }) {
         fcl.limit(1000),
       ]);
     } catch (error) {
+      console.log(error);
+      setGenericTransactionMessageOnFailure()
+      setIsTransactionInProgress(false);
       return;
     }
 
     fcl.tx(txId).subscribe((tx) => {
       if (tx.errorMessage) {
         console.log(tx);
+        setGenericTransactionMessageOnFailure()
+        setIsTransactionInProgress(false);
         return;
       }
       if (fcl.tx.isSealed(tx)) {
         console.log('%ccreate ticket success!', 'color: limegreen;');
+        setGenericTransactionMessageOnSuccess()
+        setIsTransactionInProgress(false);
       }
     });
   }
 
   async function sellTicket(ticketID, price, creator) {
+    setGenericTransactionMessageOnLoading();
+    setIsTransactionInProgress(true);
+
     let txId;
     try {
       txId = await fcl.send([
@@ -157,16 +170,22 @@ function OmuzeoNFT({ address, id }) {
       ]);
     } catch (error) {
       console.log(error);
+      setGenericTransactionMessageOnFailure()
+      setIsTransactionInProgress(false);
       return;
     }
 
     fcl.tx(txId).subscribe((tx) => {
       if (tx.errorMessage) {
         console.log(tx);
+        setGenericTransactionMessageOnFailure()
+        setIsTransactionInProgress(false);
         return;
       }
       if (fcl.tx.isSealed(tx)) {
         console.log('%clisting ticket success!', 'color: limegreen;');
+        setGenericTransactionMessageOnSuccess()
+        setIsTransactionInProgress(false);
       }
     });
   }
