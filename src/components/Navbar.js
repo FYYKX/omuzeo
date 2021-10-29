@@ -160,13 +160,13 @@ const Navbar = () => {
             {user.loggedIn && (
               <>
                 <NavLink to="/create" className={classes.link} activeStyle={activeStyle}>
-                  Create NFT
+                  Create an NFT
                 </NavLink>
                 <NavLink to="/nfts" className={classes.link} activeStyle={activeStyle}>
-                  View NFT
+                  My NFTs
                 </NavLink>
                 <NavLink to="/sales" className={classes.link} activeStyle={activeStyle}>
-                  For Sales
+                  My NFTs for Sale
                 </NavLink>
               </>
             )}

@@ -30,6 +30,7 @@ export default function useTransactionProgress() {
   const setGenericTransactionMessageOnSuccess = () => setTransactionStateMessage('Success!');
 
   return {
+    isTransactionInProgress,
     setIsTransactionInProgress,
     setTransactionStateMessage,
     setGenericTransactionMessageOnFailure,

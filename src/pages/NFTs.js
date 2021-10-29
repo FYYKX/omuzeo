@@ -4,13 +4,16 @@ import * as t from '@onflow/types';
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../AuthContext';
 import NFT from '../components/NFT';
+import {usePageLoadingProgress} from "../hooks/usePageLoadingProgress";
 
 const NFTs = () => {
   const { user } = useContext(AuthContext);
   const [nfts, setNFTs] = useState(null);
+  const { isPageLoading, setIsPageLoading } = usePageLoadingProgress();
 
   useEffect(() => {
     function fetchData(address) {
+      setIsPageLoading(true)
       fcl
         .send([
           fcl.script(`
@@ -50,13 +53,16 @@ const NFTs = () => {
           return result;
         })
         .then(setNFTs)
-        .catch(console.log);
+        .catch(console.log)
+        .finally(() => setIsPageLoading(false))
     }
 
     if (user.addr) {
       fetchData(user.addr);
     }
   }, [user.addr]);
+
+  if(isPageLoading) return <></>
 
   if (!nfts) {
     return <div>No NFTs</div>;

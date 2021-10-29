@@ -1,9 +1,11 @@
 import {
+  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   CardHeader,
+  CardMedia,
   Chip,
   CircularProgress,
   Grid,
@@ -170,26 +172,91 @@ function Sale({ address, id, currentUser }) {
   if (sale.isLoading) {
     return <CircularProgress />;
   }
+
+  const showNftsForSaleInDebugMode = () => (
+    <Card>
+      <CardHeader title={`Sale ID: ${id}`} />
+      <CardContent>
+        <Typography sx={{ mb: 5 }}>
+          NFT ID: <Chip label={sale.nftID} color="primary" variant="outlined" />
+        </Typography>
+        <Typography sx={{ mb: 5 }}>
+          Price: <Chip label={sale.salePrice} color="primary" variant="outlined" />
+        </Typography>
+        <Typography sx={{ mb: 5 }}>Details:</Typography>
+        {sale.saleCuts?.map((sc, index) => (
+          <Typography sx={{ mb: 5 }} key={index}>
+            <Chip label={sc.receiver.address} color="primary" variant="outlined" />
+            <Chip label={sc.amount} color="primary" variant="outlined" />
+          </Typography>
+        ))}
+      </CardContent>
+      {address !== currentUser && (
+        <CardActions>
+          <Button variant="contained" size="large" onClick={buy}>
+            Buy
+          </Button>
+        </CardActions>
+      )}
+    </Card>
+  );
+
+  const addEntry = (label, value, index = -1) => (
+    <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }}>
+      <Box style={{ minWidth: 100 }}>
+        <Typography style={{ color: 'grey' }}>{`${label} `}</Typography>
+      </Box>
+      <Box>
+        <Typography>{value}</Typography>
+      </Box>
+    </Box>
+  );
+
+  const showNftCardForSale = () => (
+    <>
+      <Box sx={{ height: 200 }}>
+        <CardContent>
+          <div style={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                {addEntry('sales ID', id)}
+                {sale.saleCuts?.map((sc, index) => (
+                  <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }} key={index}>
+                    <Box style={{ minWidth: 100 }}>
+                      <Typography style={{ color: 'grey' }}>{`creator `}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography>{`@${sc.receiver.address}`}</Typography>
+                    </Box>
+                  </Box>
+                ))}
+                {addEntry('identifier', sale.nftID)}
+                {addEntry(
+                  'price',
+                  <Box>
+                    <Typography variant="h4" display="inline">
+                      {sale.salePrice.slice(0, -6)}
+                    </Typography>
+                    {'  '}
+                    <Typography variant="caption" display="inline">
+                      FLOW
+                    </Typography>
+                  </Box>,
+                )}
+              </Box>
+              {/*  <Box>/!*TODO: What to place here?*!/</Box>*/}
+            </Box>
+          </div>
+        </CardContent>
+      </Box>
+    </>
+  );
+
   return (
     <Grid item>
       {getTransactionProgressComponent()}
-      <Card>
-        <CardHeader title={`Sale ID: ${id}`} />
-        <CardContent>
-          <Typography sx={{ mb: 5 }}>
-            NFT ID: <Chip label={sale.nftID} color="primary" variant="outlined" />
-          </Typography>
-          <Typography sx={{ mb: 5 }}>
-            Price: <Chip label={sale.salePrice} color="primary" variant="outlined" />
-          </Typography>
-          <Typography sx={{ mb: 5 }}>Details:</Typography>
-          {sale.saleCuts?.map((sc, index) => (
-            <Typography sx={{ mb: 5 }} key={index}>
-              <Chip label={sc.receiver.address} color="primary" variant="outlined" />
-              <Chip label={sc.amount} color="primary" variant="outlined" />
-            </Typography>
-          ))}
-        </CardContent>
+      <Card sx={{ maxWidth: 350, padding: '10px' }}>
+        {showNftCardForSale()}
         {address !== currentUser && (
           <CardActions>
             <Button variant="contained" size="large" onClick={buy}>

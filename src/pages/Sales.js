@@ -4,10 +4,12 @@ import * as t from '@onflow/types';
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../AuthContext';
 import Sale from '../components/Sale';
+import { usePageLoadingProgress } from '../hooks/usePageLoadingProgress';
 
 function Sales() {
   const { user } = useContext(AuthContext);
   const [sales, setSales] = useState([]);
+  const { isPageLoading, setIsPageLoading } = usePageLoadingProgress();
 
   useEffect(() => {
     async function fetchData(address) {
@@ -31,26 +33,33 @@ function Sales() {
             return {
               id: id,
               address: address,
-              currentUser: address
+              currentUser: address,
             };
           }),
         )
         .then(setSales)
-        .catch(console.log);
+        .catch(console.log)
+        .finally(() => setIsPageLoading(false));
     }
+
     if (user.addr) {
+      setIsPageLoading(true);
       fetchData(user.addr);
     }
   }, [user.addr]);
+
+  if (isPageLoading) return <></>;
 
   if (!sales.length) {
     return <div>No Sales</div>;
   }
   return (
     <Container>
-      <Grid container spacing={4}>
+      <Grid container spacing={15}>
         {sales.map((sale, index) => (
-          <Sale key={index} {...sale} />
+          <Grid item xs={4} key={index}>
+            <Sale key={index} {...sale} />
+          </Grid>
         ))}
       </Grid>
     </Container>

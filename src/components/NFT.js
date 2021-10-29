@@ -118,8 +118,8 @@ function NFT({ address, id, type }) {
       if (fcl.tx.isSealed(tx)) {
         console.log('%ccreate ticket success!', 'color: limegreen;');
         setGenericTransactionMessageOnSuccess();
-        setIsTransactionInProgress(false);
       }
+      setIsTransactionInProgress(false);
     });
   }
 
@@ -251,8 +251,9 @@ function NFT({ address, id, type }) {
       if (fcl.tx.isSealed(tx)) {
         console.log('%clisting ticket success!', 'color: limegreen;');
         setGenericTransactionMessageOnSuccess();
-        setIsTransactionInProgress(false);
       }
+
+      setIsTransactionInProgress(false);
     });
   }
 
@@ -311,6 +312,8 @@ function NFT({ address, id, type }) {
     return <CircularProgress />;
   }
 
+  console.log('mdata', metadata);
+
   const showNftCard = () => (
     <>
       {metadata.metadata && <CardMedia component="img" image={metadata.metadata} alt={metadata.id} />}
@@ -322,16 +325,21 @@ function NFT({ address, id, type }) {
                 <Typography style={{ color: 'grey' }}>{`${metadata.type} `}</Typography>
                 <Typography>@{metadata.owner || metadata.creator}</Typography>
               </Box>
-              <Box style={{ marginBottom: '18px' }}>
+              <Box>
                 <Typography style={{ color: 'grey', fontSize: '12px' }}>{`IDENTIFIER ${metadata.id}`}</Typography>
               </Box>
-              <Box>
-                <Typography variant="h4" display="inline">{`${(20).toFixed(2)}`}</Typography>
-                {'  '}
-                <Typography variant="caption" display="inline">
-                  FLOW
-                </Typography>
-              </Box>
+              {/*{metadata.metadata && metadata.metadata.price && (*/}
+              {/*  <Box>*/}
+              {/*    <Typography variant="h4" display="inline">{`${metadata.metadata.price.toFixed(2)}`}</Typography>*/}
+              {/*  </Box>*/}
+              {/*)}*/}
+              {/*<Box>*/}
+              {/*  <Typography variant="h4" display="inline">{`${(20).toFixed(2)}`}</Typography>*/}
+              {/*  {'  '}*/}
+              {/*  <Typography variant="caption" display="inline">*/}
+              {/*    FLOW*/}
+              {/*  </Typography>*/}
+              {/*</Box>*/}
             </Box>
             <Box>{/*TODO: What to place here?*/}</Box>
           </Box>
@@ -399,28 +407,39 @@ function NFT({ address, id, type }) {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    // width: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
+    borderRadius: '10px',
     boxShadow: 24,
-    p: 4,
+    paddingX: 20,
+    paddingY: 20,
+  };
+
+  const handlePriceChange = (evt) => {
+    if (isNaN(evt.target.value)) return;
+    setMetadata({ ...metadata, price: Number(evt.target.value) });
   };
 
   return (
     <>
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box sx={style}>
-          <TextField
-            label="Price"
-            variant="outlined"
-            value={metadata.price}
-            sx={{ m: 10 }}
-            type="number"
-            onChange={(e) => setMetadata({ ...metadata, price: Number(e.target.value) })}
-          />
-          <br />
-          <Button variant="contained" onClick={sell}>
-            Sell
+          <Box sx={{ display: 'flex', marginBottom: '10px' }}>
+            <TextField
+              label="Price"
+              variant="standard"
+              size="small"
+              value={metadata.price ? metadata.price : ''}
+              // type="number"
+              onChange={handlePriceChange}
+              style={{ marginRight: '10px' }}
+            />
+            <Typography variant="h4" sx={{ alignSelf: 'flex-end' }} style={{ marginRight: '10px'}}>
+              FLOW
+            </Typography>
+          </Box>
+          <Button variant="contained" onClick={sell} size="large">
+            Submit
           </Button>
         </Box>
       </Modal>
