@@ -127,10 +127,10 @@ function NFT({ address, id, type }) {
     setGenericTransactionMessageOnLoading();
     setIsTransactionInProgress(true);
     setOpen(false);
-    const { id, price, creator } = metadata;
+    const { id, price, type, creator } = metadata;
     let txId, cdc, args;
     try {
-      if (creator) {
+      if (type === `owner`) {
         cdc = `import FungibleToken from 0xFungibleToken
         import NonFungibleToken from 0xNonFungibleToken
         import FlowToken from 0xFlowToken
@@ -225,6 +225,7 @@ function NFT({ address, id, type }) {
             )
           }
         }`;
+        args = [fcl.arg(Number(id), t.UInt64), fcl.arg(price.toFixed(2), t.UFix64)];
       }
       txId = await fcl.send([
         fcl.transaction(cdc),
