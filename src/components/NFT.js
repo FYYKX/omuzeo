@@ -6,16 +6,17 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  CardMedia,
-  CircularProgress,
+  CardMedia, Chip,
+  CircularProgress, Divider,
   Modal,
-  TextField,
+  TextField, Tooltip,
   Typography,
 } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
 import LockedContent from '../assets/locked-item.png';
+import PaywalledContent from '../assets/paywalled-content.png';
 import useTransactionProgress from '../hooks/useTransactionProgress';
 
 function NFT({ address, id, type }) {
@@ -252,9 +253,8 @@ function NFT({ address, id, type }) {
       if (fcl.tx.isSealed(tx)) {
         console.log('%clisting ticket success!', 'color: limegreen;');
         setGenericTransactionMessageOnSuccess();
+        setIsTransactionInProgress(false);
       }
-
-      setIsTransactionInProgress(false);
     });
   }
 
@@ -326,35 +326,33 @@ function NFT({ address, id, type }) {
     </Box>
   );
 
+  const showNftUser = (data) => {
+    return (
+      <>
+        <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }}>
+          <Box style={{ minWidth: 100 }}>
+              <Chip label={data.creator ? "creator": "owner"} color="primary" variant="outlined" />
+          </Box>
+          <Box>
+            <Typography>{`@${data.owner || data.creator}`}</Typography>
+          </Box>
+        </Box>
+      </>
+    );
+  };
+
+  console.log(metadata);
+
   const showNftCard = () => (
     <Box container fluid>
       {metadata.metadata && <CardMedia component="img" image={metadata.metadata} alt={metadata.id} />}
+      <CardMedia component="img" image={PaywalledContent} alt="Locked content" />
       <CardContent>
         <div style={{ width: '100%' }}>
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              {addEntry(metadata.type, `@${metadata.owner || metadata.creator}`)}
-              {/*<Box style={{ marginBottom: '8px' }}>*/}
-              {/*  <Typography style={{ color: 'grey' }}>{`${metadata.type} `}</Typography>*/}
-              {/*  <Typography>@{metadata.owner || metadata.creator}</Typography>*/}
-              {/*</Box>*/}
-
-              {addEntry('identifier', metadata.id)}
-              {/*<Box>*/}
-              {/*  <Typography style={{ color: 'grey', fontSize: '12px' }}>{`IDENTIFIER ${metadata.id}`}</Typography>*/}
-              {/*</Box>*/}
-              {/*{metadata.metadata && metadata.metadata.price && (*/}
-              {/*  <Box>*/}
-              {/*    <Typography variant="h4" display="inline">{`${metadata.metadata.price.toFixed(2)}`}</Typography>*/}
-              {/*  </Box>*/}
-              {/*)}*/}
-              {/*<Box>*/}
-              {/*  <Typography variant="h4" display="inline">{`${(20).toFixed(2)}`}</Typography>*/}
-              {/*  {'  '}*/}
-              {/*  <Typography variant="caption" display="inline">*/}
-              {/*    FLOW*/}
-              {/*  </Typography>*/}
-              {/*</Box>*/}
+              {showNftUser(metadata)}
+              {addEntry('NFT ID', metadata.id)}
             </Box>
             <Box>{/*TODO: What to place here?*/}</Box>
           </Box>

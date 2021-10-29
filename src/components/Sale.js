@@ -7,14 +7,19 @@ import {
   CardHeader,
   CardMedia,
   Chip,
-  CircularProgress,
+  CircularProgress, Collapse,
+  Divider,
   Grid,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import * as t from '@onflow/types';
 import React, { useEffect, useState } from 'react';
 import useTransactionProgress from '../hooks/useTransactionProgress';
+import PaywalledContent from "../assets/paywalled-content.png";
+import {ExpandMore} from "@mui/icons-material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 function Sale({ address, id, currentUser }) {
   const [sale, setSale] = useState({ isLoading: true });
@@ -212,39 +217,73 @@ function Sale({ address, id, currentUser }) {
     </Box>
   );
 
-  const showNftCardForSale = () => (
-    <>
-      <Box sx={{ height: 200 }}>
+  const showOwnerAndCreator = (data) => {
+    return data.map((sc, index) => (
+      <>
+        <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }} key={index}>
+          <Box style={{ minWidth: 100 }}>
+            <Tooltip title={`${sc.amount.slice(0, -6)} FLOW`} placement="left-start">
+              <Chip
+                label={index === 0 ? 'Owner' : 'Creator'}
+                color={index === 0 ? 'secondary' : 'primary'}
+                variant="outlined"
+              />
+            </Tooltip>
+          </Box>
+          <Box>
+            <Typography>{`@${sc.receiver.address}`}</Typography>
+          </Box>
+        </Box>
+      </>
+    ));
+  };
+
+  const showCreatorOnly = (data) => {
+    return (
+      <>
+        <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }}>
+          <Box style={{ minWidth: 100 }}>
+            <Tooltip title={`${data.amount.slice(0, -6)} FLOW`} placement="left-start">
+              <Chip label="Creator" color="primary" variant="outlined" />
+            </Tooltip>
+          </Box>
+          <Box>
+            <Typography>{`@${data.receiver.address}`}</Typography>
+          </Box>
+        </Box>
+      </>
+    );
+  };
+
+  const showNftCardForSale = () => {
+    return (
+      <Box sx={{ height: 'auto' }}>
+        <CardMedia component="img" image={PaywalledContent} alt="Locked content" />
         <CardContent>
           <div style={{ width: '100%' }}>
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                {addEntry('sales ID', id)}
-                {sale.saleCuts?.map((sc, index) => (
-                  <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }} key={index}>
-                    <Box style={{ minWidth: 100 }}>
-                      <Typography style={{ color: 'grey' }}>{`creator `}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography>{`@${sc.receiver.address}`}</Typography>
-                    </Box>
-                  </Box>
-                ))}
-                {addEntry('identifier', sale.nftID)}
+                {sale.saleCuts.length > 1 ? showOwnerAndCreator(sale.saleCuts) : showCreatorOnly(sale.saleCuts[0])}
+                <br />
+                {addEntry('Sales ID', id)}
+                {addEntry('NFT ID', sale.nftID)}
               </Box>
               {/*  <Box>/!*TODO: What to place here?*!/</Box>*/}
             </Box>
           </div>
         </CardContent>
       </Box>
-    </>
-  );
+    );
+  };
 
   return (
     <>
       {getTransactionProgressComponent()}
       <Card sx={{ maxWidth: 350, padding: '10px' }}>
         {showNftCardForSale()}
+        {/*{showNftsForSaleInDebugMode()}*/}
+        {window.location.pathname === '/' ? <Divider variant="fullWidth" sx={{ marginBottom: '15px' }} /> : null}
+
         {address !== currentUser && (
           <CardActions>
             <div style={{ width: '100%' }}>

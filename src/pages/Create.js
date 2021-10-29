@@ -74,7 +74,7 @@ function Create() {
             onChange={handleTitleChange}
             size="small"
             required
-            style={{ maxWidth: formWidth, marginBottom: '10px' }}
+            style={{ maxWidth: formWidth, marginBottom: '10px', background: 'white'}}
           />
           <TextField
             multiline
@@ -83,7 +83,7 @@ function Create() {
             onChange={handleDescriptionChange}
             rows={4}
             required
-            style={{ maxWidth: formWidth, marginBottom: '10px' }}
+            style={{ maxWidth: formWidth, marginBottom: '10px', background: 'white' }}
           />
           <label htmlFor="upload-file" style={{ maxWidth: formWidth, marginBottom: '10px' }}>
             <input
