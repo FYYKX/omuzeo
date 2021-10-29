@@ -314,20 +314,34 @@ function NFT({ address, id, type }) {
 
   console.log('mdata', metadata);
 
+  const addEntry = (label, value) => (
+    <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }}>
+      <Box style={{ minWidth: 100 }}>
+        <Typography style={{ color: 'grey' }}>{`${label} `}</Typography>
+      </Box>
+      <Box>
+        <Typography>{value}</Typography>
+      </Box>
+    </Box>
+  );
+
   const showNftCard = () => (
-    <>
+    <Box container fluid>
       {metadata.metadata && <CardMedia component="img" image={metadata.metadata} alt={metadata.id} />}
       <CardContent>
         <div style={{ width: '100%' }}>
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Box style={{ marginBottom: '8px' }}>
-                <Typography style={{ color: 'grey' }}>{`${metadata.type} `}</Typography>
-                <Typography>@{metadata.owner || metadata.creator}</Typography>
-              </Box>
-              <Box>
-                <Typography style={{ color: 'grey', fontSize: '12px' }}>{`IDENTIFIER ${metadata.id}`}</Typography>
-              </Box>
+              {addEntry(metadata.type, `@${metadata.owner || metadata.creator}`)}
+              {/*<Box style={{ marginBottom: '8px' }}>*/}
+              {/*  <Typography style={{ color: 'grey' }}>{`${metadata.type} `}</Typography>*/}
+              {/*  <Typography>@{metadata.owner || metadata.creator}</Typography>*/}
+              {/*</Box>*/}
+
+              {addEntry('identifier', metadata.id)}
+              {/*<Box>*/}
+              {/*  <Typography style={{ color: 'grey', fontSize: '12px' }}>{`IDENTIFIER ${metadata.id}`}</Typography>*/}
+              {/*</Box>*/}
               {/*{metadata.metadata && metadata.metadata.price && (*/}
               {/*  <Box>*/}
               {/*    <Typography variant="h4" display="inline">{`${metadata.metadata.price.toFixed(2)}`}</Typography>*/}
@@ -345,7 +359,7 @@ function NFT({ address, id, type }) {
           </Box>
         </div>
       </CardContent>
-    </>
+    </Box>
   );
 
   const showNftCardDebugVersion = () => (
@@ -434,7 +448,7 @@ function NFT({ address, id, type }) {
               onChange={handlePriceChange}
               style={{ marginRight: '10px' }}
             />
-            <Typography variant="h4" sx={{ alignSelf: 'flex-end' }} style={{ marginRight: '10px'}}>
+            <Typography variant="h4" sx={{ alignSelf: 'flex-end' }} style={{ marginRight: '10px' }}>
               FLOW
             </Typography>
           </Box>
@@ -444,7 +458,7 @@ function NFT({ address, id, type }) {
         </Box>
       </Modal>
       {getTransactionProgressComponent()}
-      <Card sx={{ maxWidth: 270, padding: '10px' }}>
+      <Card sx={{ maxWidth: 350, padding: '10px' }}>
         {showNftCard()}
         <CardActions>
           {address !== metadata.creator && (

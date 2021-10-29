@@ -201,7 +201,7 @@ function Sale({ address, id, currentUser }) {
     </Card>
   );
 
-  const addEntry = (label, value, index = -1) => (
+  const addEntry = (label, value) => (
     <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }}>
       <Box style={{ minWidth: 100 }}>
         <Typography style={{ color: 'grey' }}>{`${label} `}</Typography>
@@ -231,18 +231,6 @@ function Sale({ address, id, currentUser }) {
                   </Box>
                 ))}
                 {addEntry('identifier', sale.nftID)}
-                {addEntry(
-                  'price',
-                  <Box>
-                    <Typography variant="h4" display="inline">
-                      {sale.salePrice.slice(0, -6)}
-                    </Typography>
-                    {'  '}
-                    <Typography variant="caption" display="inline">
-                      FLOW
-                    </Typography>
-                  </Box>,
-                )}
               </Box>
               {/*  <Box>/!*TODO: What to place here?*!/</Box>*/}
             </Box>
@@ -253,19 +241,34 @@ function Sale({ address, id, currentUser }) {
   );
 
   return (
-    <Grid item>
+    <>
       {getTransactionProgressComponent()}
       <Card sx={{ maxWidth: 350, padding: '10px' }}>
         {showNftCardForSale()}
         {address !== currentUser && (
           <CardActions>
-            <Button variant="contained" size="large" onClick={buy}>
-              Buy
-            </Button>
+            <div style={{ width: '100%' }}>
+              <Box
+                sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <Box>
+                  <Typography variant="h4" display="inline">
+                    {sale.salePrice.slice(0, -6)}
+                  </Typography>
+                  {'  '}
+                  <Typography variant="caption" display="inline">
+                    FLOW
+                  </Typography>
+                </Box>
+                <Button variant="contained" size="large" onClick={buy}>
+                  Buy
+                </Button>
+              </Box>
+            </div>
           </CardActions>
         )}
       </Card>
-    </Grid>
+    </>
   );
 }
 
