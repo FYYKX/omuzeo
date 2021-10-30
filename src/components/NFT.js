@@ -6,10 +6,11 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  CardMedia, Chip,
-  CircularProgress, Divider,
+  CardMedia,
+  Chip,
+  CircularProgress,
   Modal,
-  TextField, Tooltip,
+  TextField,
   Typography,
 } from '@mui/material';
 import * as fcl from '@onflow/fcl';
@@ -331,7 +332,7 @@ function NFT({ address, id, type }) {
       <>
         <Box sx={{ display: 'flex' }} style={{ marginBottom: '8px' }}>
           <Box style={{ minWidth: 100 }}>
-              <Chip label={data.creator ? "creator": "owner"} color="primary" variant="outlined" />
+            <Chip label={data.creator ? 'creator' : 'owner'} color="primary" variant="outlined" />
           </Box>
           <Box>
             <Typography>{`@${data.owner || data.creator}`}</Typography>
@@ -420,7 +421,6 @@ function NFT({ address, id, type }) {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    // width: 400,
     bgcolor: 'background.paper',
     borderRadius: '10px',
     boxShadow: 24,
@@ -443,7 +443,6 @@ function NFT({ address, id, type }) {
               variant="standard"
               size="small"
               value={metadata.price ? metadata.price : ''}
-              // type="number"
               onChange={handlePriceChange}
               style={{ marginRight: '10px' }}
             />

@@ -74,7 +74,7 @@ function Create() {
             onChange={handleTitleChange}
             size="small"
             required
-            style={{ maxWidth: formWidth, marginBottom: '10px', background: 'white'}}
+            style={{ maxWidth: formWidth, marginBottom: '10px', background: 'white' }}
           />
           <TextField
             multiline
@@ -86,14 +86,7 @@ function Create() {
             style={{ maxWidth: formWidth, marginBottom: '10px', background: 'white' }}
           />
           <label htmlFor="upload-file" style={{ maxWidth: formWidth, marginBottom: '10px' }}>
-            <input
-              hidden
-              id="upload-file"
-              name="upload-file"
-              type="file"
-              // value={nftArtImage ? nftArtImage : ''}
-              onChange={handleUpload}
-            />
+            <input hidden id="upload-file" name="upload-file" type="file" onChange={handleUpload} />
             <Button variant="outlined" component="span" style={{ minWidth: 150 }}>
               <FileUploadIcon />
               Upload file

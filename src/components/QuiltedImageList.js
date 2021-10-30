@@ -1,6 +1,6 @@
-import React from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import React from 'react';
 
 function srcset(image, size, rows = 1, cols = 1) {
   return {
@@ -70,7 +70,6 @@ const itemData = [
   },
 ];
 
-// TODO: make images clickable!
 const QuiltedImageList = () => {
   return (
     <ImageList variant="quilted" cols={4} rowHeight={121}>
