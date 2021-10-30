@@ -10,9 +10,6 @@ This project is submitted for the Mercury Hackathon 2021.
 
 Omuzeo at its core is built on [Flow](https://onflow.org) blockchain. It utilises five smart contracts three of which are ready-to-use templates: `NonFungibleToken`, `NFTStorefront`, `FungibleToken`. We've used this to speed up the creation and listing of NFTs for sale, trading of FLOW cryptocurrency as well as to implement the sales cut for content creators. The fourth smart contract is [`OmuzeoItems`](https://github.com/FYYKX/omuzeo#omuzeoitems) for a typical scenario of selling only one version of the NFT that is not a locked content and earning royalties each time it is sold to a new owner. The last smart contract that we developed is [`OmuzeoNFT`](https://github.com/FYYKX/omuzeo#omuzeonft). This is to allow copies of content creator's paywalled content to be sold by other users of the platform thereby giving a percentage of sales to the content creator when the restricted content is accessed.
 
-The contract based on the `NonFungibleToken` to enable a user to view the metadata of the NFT.
-
-The contract that hides the content metadata from public. Only when someone buys an access to the child NFT can the content be viewed. The contract also provides a functionality to create "tickets" (a.k.a child NFTs) to the owner of the NFT. Each child NFT generated splits the sales earnings to both the owner and creator. As of this writing it's a 70-30 split.
 
 ### Architecture
 
